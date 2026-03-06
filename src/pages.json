@@ -1,0 +1,56 @@
+{
+  "pages": [
+    {
+      "path": "pages/index/index",
+      "style": {
+        "navigationBarTitleText": "宝宝奖励计划",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/login/login",
+      "style": {
+        "navigationBarTitleText": "登录",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/history/history",
+      "style": {
+        "navigationBarTitleText": "抽奖历史"
+      }
+    },
+    {
+      "path": "pages/requests/requests",
+      "style": {
+        "navigationBarTitleText": "审批请求"
+      }
+    }
+  ],
+  "globalStyle": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "宝宝奖励计划",
+    "navigationBarBackgroundColor": "#F9FAFB",
+    "backgroundColor": "#F9FAFB"
+  },
+  "tabBar": {
+    "color": "#6B7280",
+    "selectedColor": "#9333EA",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "首页",
+        "iconPath": "static/tabbar/home.png",
+        "selectedIconPath": "static/tabbar/home-active.png"
+      },
+      {
+        "pagePath": "pages/history/history",
+        "text": "历史",
+        "iconPath": "static/tabbar/history.png",
+        "selectedIconPath": "static/tabbar/history-active.png"
+      }
+    ]
+  }
+}
