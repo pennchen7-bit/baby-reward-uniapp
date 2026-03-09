@@ -198,19 +198,24 @@ export default {
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 24rpx;
+  margin: 40rpx 20rpx;
+  backdrop-filter: blur(10rpx);
 }
 
 .empty-emoji {
   display: block;
   font-size: 100rpx;
   margin-bottom: 24rpx;
-  opacity: 0.6;
 }
 
 .empty-text {
   display: block;
   font-size: 28rpx;
-  color: rgba(255, 255, 255, 0.8);
+  color: #ffffff;
+  font-weight: 500;
+  text-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.2);
 }
 
 .record-card {
