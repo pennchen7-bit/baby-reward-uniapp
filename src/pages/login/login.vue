@@ -12,7 +12,7 @@
       <view class="login-box">
         <button 
           class="btn-wechat"
-          :disabled="logging"
+          :disabled="!canLogin"
           @click="handleWechatLogin"
         >
           <view class="btn-content">
@@ -21,7 +21,10 @@
           </view>
         </button>
 
-        <text class="btn-desc">首次登录自动创建家庭 · 邀请家人共同成长</text>
+        <text class="btn-desc">
+          <text v-if="canLogin">首次登录自动创建家庭 · 邀请家人共同成长</text>
+          <text v-else>正在初始化...</text>
+        </text>
 
         <!-- 加载状态 -->
         <view v-if="logging" class="loading">
@@ -44,8 +47,16 @@ export default {
   data() {
     return {
       logging: false,
+      canLogin: false,
       error: '',
     };
+  },
+  
+  onReady() {
+    // 页面加载完成后启用登录按钮
+    setTimeout(() => {
+      this.canLogin = true;
+    }, 500);
   },
   
   methods: {
