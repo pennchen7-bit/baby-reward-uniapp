@@ -67,6 +67,11 @@ export default {
   
   methods: {
     async handleWechatLogin() {
+      // 防止重复点击
+      if (!this.canLogin || this.logging) {
+        return;
+      }
+      
       this.logging = true;
       this.error = '';
       
@@ -117,7 +122,7 @@ export default {
           icon: 'none',
           duration: 3000,
         });
-      } finally {
+        // 登录失败才允许重新点击
         this.logging = false;
       }
     },
