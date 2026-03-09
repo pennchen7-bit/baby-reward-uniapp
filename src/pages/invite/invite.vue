@@ -196,8 +196,10 @@ export default {
 }
 
 .header {
+  position: relative;
   text-align: center;
   margin-bottom: 40rpx;
+  padding: 20rpx 0;
 }
 
 .title {

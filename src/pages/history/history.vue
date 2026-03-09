@@ -140,8 +140,10 @@ export default {
 }
 
 .header {
+  position: relative;
   text-align: center;
   margin-bottom: 24rpx;
+  padding: 20rpx 0;
 }
 
 .title {

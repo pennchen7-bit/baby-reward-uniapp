@@ -251,8 +251,9 @@ export default {
 }
 
 .header {
+  position: relative;
   text-align: center;
-  padding: 0 40rpx;
+  padding: 20rpx 40rpx;
   margin-bottom: 24rpx;
 }
 
