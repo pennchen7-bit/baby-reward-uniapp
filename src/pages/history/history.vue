@@ -103,8 +103,8 @@ export default {
 <style scoped>
 .container {
   min-height: 100vh;
-  background: linear-gradient(135deg, #fce7f3 0%, #f3e8ff 50%, #dbeafe 100%);
-  padding-top: calc(80rpx + env(safe-area-inset-top));
+  background: linear-gradient(180deg, #f0abfc 0%, #818cf8 50%, #60a5fa 100%);
+  padding-top: calc(100rpx + env(safe-area-inset-top));
   padding-left: 32rpx;
   padding-right: 32rpx;
   padding-bottom: calc(200rpx + env(safe-area-inset-bottom));

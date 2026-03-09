@@ -170,8 +170,8 @@ export default {
 <style scoped>
 .container {
   min-height: 100vh;
-  background: linear-gradient(135deg, #fce7f3 0%, #f3e8ff 50%, #dbeafe 100%);
-  padding: calc(80rpx + env(safe-area-inset-top)) 40rpx calc(40rpx + env(safe-area-inset-bottom));
+  background: linear-gradient(180deg, #f0abfc 0%, #818cf8 50%, #60a5fa 100%);
+  padding: calc(100rpx + env(safe-area-inset-top)) 40rpx calc(40rpx + env(safe-area-inset-bottom));
 }
 
 .header {
@@ -180,22 +180,24 @@ export default {
 }
 
 .title {
-  font-size: 48rpx;
+  font-size: 40rpx;
   font-weight: bold;
-  color: #9333ea;
+  color: #ffffff;
   display: block;
-  margin-bottom: 16rpx;
+  margin-bottom: 8rpx;
+  text-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.15);
 }
 
 .subtitle {
-  font-size: 28rpx;
-  color: #6b7280;
+  font-size: 24rpx;
+  color: rgba(255, 255, 255, 0.9);
   display: block;
 }
 
 /* 家庭信息 */
 .family-info {
-  background: #ffffff;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10rpx);
   border-radius: 24rpx;
   padding: 32rpx;
   margin-bottom: 32rpx;
@@ -283,22 +285,24 @@ export default {
 /* 生成按钮 */
 .btn-generate {
   width: 100%;
-  height: 88rpx;
-  background: linear-gradient(135deg, #9333ea 0%, #ec4899 100%);
-  color: #ffffff;
-  border-radius: 16rpx;
+  height: 96rpx;
+  background: #ffffff;
+  border-radius: 48rpx;
   font-size: 32rpx;
   font-weight: 600;
+  color: #07c160;
   margin-bottom: 32rpx;
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.1);
 }
 
 .btn-generate:disabled {
-  background: #9ca3af;
+  opacity: 0.7;
 }
 
 /* 邀请结果 */
 .invite-result {
-  background: #ffffff;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10rpx);
   border-radius: 24rpx;
   padding: 32rpx;
 }
@@ -318,10 +322,10 @@ export default {
 
 .btn-share {
   width: 100%;
-  height: 88rpx;
+  height: 96rpx;
   background: #07c160;
   color: #ffffff;
-  border-radius: 16rpx;
+  border-radius: 48rpx;
   display: flex;
   align-items: center;
   justify-content: center;

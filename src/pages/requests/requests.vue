@@ -191,7 +191,7 @@ export default {
 .container {
   min-height: 100vh;
   background: #f9fafb;
-  padding-top: calc(80rpx + env(safe-area-inset-top));
+  padding-top: calc(100rpx + env(safe-area-inset-top));
   padding-left: 32rpx;
   padding-right: 32rpx;
   padding-bottom: calc(40rpx + env(safe-area-inset-bottom));

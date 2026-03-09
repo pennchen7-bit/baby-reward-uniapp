@@ -511,29 +511,31 @@ export default {
   text-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.15);
 }
 
-/* 邀请按钮 */
+/* 邀请按钮 - 简洁样式 */
 .btn-invite {
-  background: linear-gradient(135deg, #9333ea 0%, #ec4899 100%);
+  background: rgba(255, 255, 255, 0.25);
   color: #ffffff;
-  padding: 12rpx 24rpx;
+  padding: 10rpx 20rpx;
   border-radius: 20rpx;
   display: flex;
   align-items: center;
-  gap: 8rpx;
-  box-shadow: 0 4rpx 16rpx rgba(147, 51, 234, 0.3);
+  gap: 6rpx;
+  font-size: 22rpx;
+  font-weight: 500;
+  backdrop-filter: blur(10rpx);
+  border: 1rpx solid rgba(255, 255, 255, 0.3);
 }
 
 .btn-invite:active {
-  transform: scale(0.95);
+  background: rgba(255, 255, 255, 0.35);
 }
 
 .invite-icon {
-  font-size: 28rpx;
+  font-size: 24rpx;
 }
 
 .invite-text {
-  font-size: 24rpx;
-  font-weight: 600;
+  font-size: 22rpx;
 }
 
 .subtitle {
