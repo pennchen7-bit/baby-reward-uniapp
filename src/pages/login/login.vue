@@ -5,6 +5,20 @@
       <text class="subtitle">{{ mode === 'login' ? '欢迎回来' : '创建新家庭' }}</text>
     </view>
 
+    <!-- 微信登录按钮 -->
+    <button 
+      class="btn-wechat"
+      :disabled="wechatLogging"
+      @click="handleWechatLogin"
+    >
+      <text class="btn-wechat-icon">💬</text>
+      <text class="btn-wechat-text">{{ wechatLogging ? '登录中...' : '微信一键登录' }}</text>
+    </button>
+
+    <view class="divider">
+      <text class="divider-text">或</text>
+    </view>
+
     <!-- 模式切换 -->
     <view class="tabs">
       <view 
@@ -133,10 +147,66 @@ export default {
       familyCode: '',
       error: '',
       loading: false,
+      wechatLogging: false,
     };
   },
   
   methods: {
+    // 微信一键登录
+    async handleWechatLogin() {
+      this.wechatLogging = true;
+      this.error = '';
+      
+      try {
+        // 调用微信登录
+        const { code } = await uni.login({ provider: 'weixin' });
+        
+        // 检查是否有邀请码（从 URL 参数或 storage）
+        const inviteCode = uni.getStorageSync('invite_code') || '';
+        const inviteRole = uni.getStorageSync('invite_role') || '';
+        
+        // 调用后端微信登录 API
+        const res = await auth.wechatLogin({
+          code,
+          familyCode: inviteCode || undefined,
+          role: inviteRole || undefined,
+        });
+        
+        // 清除邀请信息
+        uni.removeStorageSync('invite_code');
+        uni.removeStorageSync('invite_role');
+        
+        // 保存用户信息
+        uni.setStorageSync('user_info', res.user);
+        
+        // 提示
+        if (res.isNewUser) {
+          uni.showToast({
+            title: res.family ? `创建家庭成功！家庭码：${res.family.familyCode}` : '加入家庭成功',
+            icon: 'success',
+            duration: 2000,
+          });
+        }
+        
+        // 跳转到首页
+        setTimeout(() => {
+          uni.reLaunch({
+            url: '/pages/index/index',
+          });
+        }, 1500);
+        
+      } catch (err) {
+        this.error = err.message || '微信登录失败';
+        uni.showToast({
+          title: this.error,
+          icon: 'none',
+          duration: 3000,
+        });
+      } finally {
+        this.wechatLogging = false;
+      }
+    },
+    
     async handleLogin() {
       this.error = '';
       this.loading = true;
@@ -152,7 +222,7 @@ export default {
         uni.setStorageSync('user_info', res.user);
         
         // 跳转到首页
-        uni.switchTab({
+        uni.reLaunch({
           url: '/pages/index/index',
         });
       } catch (err) {
@@ -189,7 +259,7 @@ export default {
         
         // 跳转到首页
         setTimeout(() => {
-          uni.switchTab({
+          uni.reLaunch({
             url: '/pages/index/index',
           });
         }, 2000);
@@ -212,7 +282,10 @@ export default {
 .container {
   min-height: 100vh;
   background: linear-gradient(135deg, #fce7f3 0%, #f3e8ff 50%, #dbeafe 100%);
-  padding: 40rpx;
+  padding-top: calc(80rpx + env(safe-area-inset-top));
+  padding-left: 40rpx;
+  padding-right: 40rpx;
+  padding-bottom: calc(40rpx + env(safe-area-inset-bottom));
 }
 
 .header {
@@ -232,6 +305,55 @@ export default {
   font-size: 28rpx;
   color: #6b7280;
   display: block;
+}
+
+/* 微信登录按钮 */
+.btn-wechat {
+  width: 100%;
+  height: 88rpx;
+  background: #07c160;
+  color: #ffffff;
+  border-radius: 16rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12rpx;
+  margin-bottom: 24rpx;
+  font-size: 32rpx;
+  font-weight: 600;
+}
+
+.btn-wechat:disabled {
+  background: #9ca3af;
+}
+
+.btn-wechat-icon {
+  font-size: 36rpx;
+}
+
+.btn-wechat-text {
+  display: block;
+}
+
+/* 分隔线 */
+.divider {
+  display: flex;
+  align-items: center;
+  margin: 32rpx 0;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  height: 1rpx;
+  background: #e5e7eb;
+}
+
+.divider-text {
+  padding: 0 24rpx;
+  color: #9ca3af;
+  font-size: 24rpx;
 }
 
 .tabs {

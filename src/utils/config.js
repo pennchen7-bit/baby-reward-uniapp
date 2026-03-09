@@ -3,8 +3,8 @@
  */
 
 // 后端 API 地址
-// 开发环境可以用本地地址，生产环境需要部署到公网
-export const API_BASE_URL = 'http://localhost:3000/api';
+// 生产环境已部署到 Vercel
+export const API_BASE_URL = 'https://baby-reward-api.vercel.app/api';
 
 // 替换成你的后端地址（部署后）
 // export const API_BASE_URL = 'https://your-app.vercel.app/api';

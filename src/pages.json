@@ -25,6 +25,12 @@
       "style": {
         "navigationBarTitleText": "审批请求"
       }
+    },
+    {
+      "path": "pages/invite/invite",
+      "style": {
+        "navigationBarTitleText": "邀请家人"
+      }
     }
   ],
   "globalStyle": {

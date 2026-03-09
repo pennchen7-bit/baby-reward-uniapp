@@ -16,11 +16,28 @@ export const auth = {
   // 注册
   register: (data) => post('/auth/register', data),
   
+  // 微信登录
+  wechatLogin: (data) => post('/auth/wechat-login', data),
+  
   // 加入家庭
   join: (data) => post('/auth/join', data),
   
   // 登出
   logout: () => post('/auth/logout'),
+};
+
+/**
+ * 邀请相关
+ */
+export const invite = {
+  // 生成邀请链接
+  generate: (data) => post('/invite/generate', data),
+  
+  // 验证邀请码
+  verify: (code) => get(`/invite/join?code=${code}`),
+  
+  // 加入家庭（确认）
+  join: (code, data) => post(`/invite/join?code=${code}`, data),
 };
 
 /**

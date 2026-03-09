@@ -447,15 +447,14 @@ export default {
 </script>
 
 <style scoped>
-/* 样式太长，见下一条消息 */
-</style>
-/* 首页样式补充 */
 
 .container {
   min-height: 100vh;
   background: linear-gradient(135deg, #fce7f3 0%, #f3e8ff 50%, #dbeafe 100%);
-  padding: calc(32rpx + env(safe-area-inset-top)) 32rpx 200rpx 32rpx;
-  padding-bottom: constant(safe-area-inset-bottom);
+  padding-top: calc(80rpx + env(safe-area-inset-top));
+  padding-left: 32rpx;
+  padding-right: 32rpx;
+  padding-bottom: calc(200rpx + env(safe-area-inset-bottom));
 }
 
 .header {
@@ -883,3 +882,4 @@ export default {
   background: #ef4444;
   color: #ffffff;
 }
+</style>
