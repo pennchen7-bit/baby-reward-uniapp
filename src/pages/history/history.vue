@@ -1,6 +1,7 @@
 <template>
   <view class="container">
     <view class="header">
+      <view class="back-btn" @click="goBack"><text class="back-icon">‹</text></view>
       <text class="title">📜 抽奖历史</text>
       <text class="subtitle">记录每一次惊喜时刻</text>
     </view>
@@ -54,6 +55,10 @@ export default {
   },
   
   methods: {
+    goBack() {
+      uni.navigateBack();
+    },
+
     async fetchRecords() {
       this.loading = true;
       try {
@@ -108,6 +113,30 @@ export default {
   padding-left: 32rpx;
   padding-right: 32rpx;
   padding-bottom: calc(200rpx + env(safe-area-inset-bottom));
+}
+
+.back-btn {
+  position: absolute;
+  left: 32rpx;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 60rpx;
+  height: 60rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.back-icon {
+  font-size: 64rpx;
+  color: #ffffff;
+  font-weight: 300;
+  line-height: 1;
+}
+
+.back-btn:active {
+  opacity: 0.7;
 }
 
 .header {
