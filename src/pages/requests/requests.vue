@@ -2,7 +2,6 @@
   <view class="container">
     <!-- 头部 -->
     <view class="header">
-      <view class="back-btn" @click="goBack"><text class="back-icon">‹</text></view>
       <text class="title">🔔 审批请求</text>
       <text class="subtitle">{{ pendingCount }} 个待批准</text>
     </view>
@@ -119,12 +118,9 @@ export default {
     this.fetchRequests();
     
     // 轮询更新
-    const interval = setInterval(() => {
+    this.pollInterval = setInterval(() => {
       this.fetchRequests();
     }, 5000);
-    
-    // 保存 interval 以便页面卸载时清除
-    this.pollInterval = interval;
   },
   
   onUnload() {
@@ -138,7 +134,6 @@ export default {
     goBack() {
       uni.navigateBack();
     },
-
     handleFilter(value) {
       this.currentFilter = value;
     },
@@ -235,34 +230,9 @@ export default {
 }
 
 /* 头部 */
-.back-btn {
-  position: absolute;
-  left: 32rpx;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 60rpx;
-  height: 60rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10;
-}
-
-.back-icon {
-  font-size: 64rpx;
-  color: #ffffff;
-  font-weight: 300;
-  line-height: 1;
-}
-
-.back-btn:active {
-  opacity: 0.7;
-}
-
 .header {
-  position: relative;
   text-align: center;
-  padding: 20rpx 40rpx;
+  padding: 0 40rpx;
   margin-bottom: 24rpx;
 }
 
