@@ -227,6 +227,7 @@ export default {
   padding-bottom: calc(40rpx + env(safe-area-inset-bottom));
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 /* 头部 */
@@ -234,7 +235,7 @@ export default {
   position: relative;
   text-align: center;
   padding: 20rpx 40rpx;
-  margin-bottom: 24rpx;
+  flex-shrink: 0;
 }
 
 .back-btn {
@@ -279,7 +280,7 @@ export default {
 /* 筛选区域 */
 .filter-section {
   padding: 0 32rpx;
-  margin-bottom: 24rpx;
+  flex-shrink: 0;
 }
 
 .filter-list {
@@ -335,6 +336,7 @@ export default {
 .list {
   flex: 1;
   padding: 0 32rpx;
+  overflow-y: auto;
 }
 
 /* 空状态 */
