@@ -17,26 +17,29 @@
     {
       "path": "pages/history/history",
       "style": {
-        "navigationBarTitleText": "抽奖历史"
+        "navigationBarTitleText": "抽奖历史",
+        "navigationStyle": "custom"
       }
     },
     {
       "path": "pages/requests/requests",
       "style": {
-        "navigationBarTitleText": "审批请求"
+        "navigationBarTitleText": "审批请求",
+        "navigationStyle": "custom"
       }
     },
     {
       "path": "pages/invite/invite",
       "style": {
-        "navigationBarTitleText": "邀请家人"
+        "navigationBarTitleText": "邀请家人",
+        "navigationStyle": "custom"
       }
     }
   ],
   "globalStyle": {
-    "navigationBarTextStyle": "black",
+    "navigationBarTextStyle": "white",
     "navigationBarTitleText": "宝宝奖励计划",
-    "navigationBarBackgroundColor": "#F9FAFB",
+    "navigationBarBackgroundColor": "#f0abfc",
     "backgroundColor": "#F9FAFB"
   }
 }
