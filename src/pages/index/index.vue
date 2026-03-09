@@ -2,7 +2,14 @@
   <view class="container">
     <!-- 头部 -->
     <view class="header">
-      <text class="title">🎁 宝宝奖励计划</text>
+      <view class="header-top">
+        <text class="title">🎁 宝宝奖励计划</text>
+        <!-- 邀请按钮（管理员/家长） -->
+        <button v-if="isAdminOrParent" class="btn-invite" @click="goToInvite">
+          <text class="invite-icon">📧</text>
+          <text class="invite-text">邀请家人</text>
+        </button>
+      </view>
       <text class="subtitle">{{ subtitleText }}</text>
       
       <!-- 用户信息 -->
@@ -16,6 +23,7 @@
         <text v-if="userInfo.familyCode" class="family-code">
           🔑 {{ userInfo.familyCode }}
         </text>
+        <button class="btn-logout" @click="handleLogout">退出</button>
       </view>
     </view>
 
@@ -294,6 +302,31 @@ export default {
       }
     },
     
+    // 跳转到邀请页面
+    goToInvite() {
+      uni.navigateTo({
+        url: '/pages/invite/invite',
+      });
+    },
+    
+    // 退出登录
+    async handleLogout() {
+      try {
+        await auth.logout();
+      } catch (err) {
+        console.error('Logout error:', err);
+      }
+      
+      // 清除本地数据
+      uni.removeStorageSync('user_info');
+      uni.removeStorageSync('family_code');
+      
+      // 跳转到登录页
+      uni.reLaunch({
+        url: '/pages/login/login',
+      });
+    },
+    
     loadMoreRecords() {
       if (this.hasMoreRecords) {
         this.fetchDrawRecords(this.recordsPage + 1);
@@ -462,12 +495,43 @@ export default {
   margin-bottom: 32rpx;
 }
 
+.header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12rpx;
+}
+
 .title {
   font-size: 44rpx;
   font-weight: bold;
   color: #9333ea;
   display: block;
-  margin-bottom: 12rpx;
+}
+
+/* 邀请按钮 */
+.btn-invite {
+  background: linear-gradient(135deg, #9333ea 0%, #ec4899 100%);
+  color: #ffffff;
+  padding: 12rpx 24rpx;
+  border-radius: 20rpx;
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  box-shadow: 0 4rpx 16rpx rgba(147, 51, 234, 0.3);
+}
+
+.btn-invite:active {
+  transform: scale(0.95);
+}
+
+.invite-icon {
+  font-size: 28rpx;
+}
+
+.invite-text {
+  font-size: 24rpx;
+  font-weight: 600;
 }
 
 .subtitle {
@@ -482,6 +546,20 @@ export default {
   justify-content: center;
   gap: 16rpx;
   flex-wrap: wrap;
+  align-items: center;
+}
+
+/* 退出按钮 */
+.btn-logout {
+  background: #f3f4f6;
+  color: #6b7280;
+  padding: 8rpx 20rpx;
+  border-radius: 16rpx;
+  font-size: 22rpx;
+}
+
+.btn-logout:active {
+  background: #e5e7eb;
 }
 
 .user-tag, .family-code {

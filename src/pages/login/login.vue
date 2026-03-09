@@ -1,135 +1,72 @@
 <template>
   <view class="container">
+    <!-- 顶部装饰 -->
+    <view class="top-decoration">
+      <view class="circle circle-1"></view>
+      <view class="circle circle-2"></view>
+      <view class="circle circle-3"></view>
+    </view>
+
+    <!-- Logo 和标题 -->
     <view class="header">
-      <text class="title">🎁 宝宝奖励计划</text>
-      <text class="subtitle">{{ mode === 'login' ? '欢迎回来' : '创建新家庭' }}</text>
+      <view class="logo-box">
+        <text class="logo">🎁</text>
+      </view>
+      <text class="title">宝宝奖励计划</text>
+      <text class="subtitle">记录成长，奖励进步</text>
     </view>
 
-    <!-- 微信登录按钮 -->
-    <button 
-      class="btn-wechat"
-      :disabled="wechatLogging"
-      @click="handleWechatLogin"
-    >
-      <text class="btn-wechat-icon">💬</text>
-      <text class="btn-wechat-text">{{ wechatLogging ? '登录中...' : '微信一键登录' }}</text>
-    </button>
-
-    <view class="divider">
-      <text class="divider-text">或</text>
-    </view>
-
-    <!-- 模式切换 -->
-    <view class="tabs">
-      <view 
-        class="tab" 
-        :class="{ active: mode === 'login' }"
-        @click="mode = 'login'"
-      >
-        登录
-      </view>
-      <view 
-        class="tab" 
-        :class="{ active: mode === 'register' }"
-        @click="mode = 'register'"
-      >
-        注册
-      </view>
-    </view>
-
-    <!-- 错误提示 -->
-    <view v-if="error" class="error">
-      {{ error }}
-    </view>
-
-    <!-- 登录表单 -->
-    <view v-if="mode === 'login'" class="form">
-      <view class="form-item">
-        <text class="label">🔑 家庭码（可选）</text>
-        <input 
-          class="input" 
-          v-model="familyCode" 
-          placeholder="8888"
-          maxlength="4"
-          type="number"
-        />
-        <text class="tip">4 位数字，向家庭管理员获取（如知道请填写）</text>
-      </view>
-      
-      <view class="form-item">
-        <text class="label">用户名</text>
-        <input 
-          class="input" 
-          v-model="username" 
-          placeholder="输入用户名"
-          auto-capitalize="none"
-        />
-      </view>
-      
-      <view class="form-item">
-        <text class="label">密码</text>
-        <input 
-          class="input" 
-          v-model="password" 
-          type="password"
-          placeholder="输入密码"
-        />
-      </view>
-      
+    <!-- 主要内容区 -->
+    <view class="content">
+      <!-- 微信登录按钮 -->
       <button 
-        class="btn btn-primary" 
-        :disabled="loading"
-        @click="handleLogin"
+        class="btn-wechat"
+        :disabled="logging"
+        @click="handleWechatLogin"
       >
-        {{ loading ? '登录中...' : '登录' }}
+        <view class="btn-wechat-content">
+          <text class="btn-wechat-icon">💬</text>
+          <view class="btn-wechat-text">
+            <text class="btn-main">微信一键登录</text>
+            <text class="btn-sub">安全便捷，自动创建家庭</text>
+          </view>
+        </view>
       </button>
+
+      <!-- 加载状态 -->
+      <view v-if="logging" class="loading">
+        <text class="loading-text">登录中...</text>
+      </view>
+
+      <!-- 错误提示 -->
+      <view v-if="error" class="error-box">
+        <text class="error-icon">⚠️</text>
+        <text class="error-text">{{ error }}</text>
+      </view>
     </view>
 
-    <!-- 注册表单 -->
-    <view v-else class="form">
-      <view class="form-item">
-        <text class="label">🏠 家庭名称</text>
-        <input 
-          class="input" 
-          v-model="familyName" 
-          placeholder="例如：幸福小家"
-        />
-        <text class="tip">创建后您将担任该家庭的管理员</text>
+    <!-- 底部说明 -->
+    <view class="footer">
+      <view class="feature-list">
+        <view class="feature-item">
+          <text class="feature-icon">✨</text>
+          <text class="feature-text">微信授权，无需注册</text>
+        </view>
+        <view class="feature-item">
+          <text class="feature-icon">🏠</text>
+          <text class="feature-text">首次登录自动创建家庭</text>
+        </view>
+        <view class="feature-item">
+          <text class="feature-icon">👨‍👩‍👧‍👦</text>
+          <text class="feature-text">邀请家人，共同成长</text>
+        </view>
+        <view class="feature-item">
+          <text class="feature-icon">🎰</text>
+          <text class="feature-text">抽奖激励，快乐成长</text>
+        </view>
       </view>
       
-      <view class="form-item">
-        <text class="label">用户名</text>
-        <input 
-          class="input" 
-          v-model="username" 
-          placeholder="设置用户名"
-          auto-capitalize="none"
-        />
-      </view>
-      
-      <view class="form-item">
-        <text class="label">密码</text>
-        <input 
-          class="input" 
-          v-model="password" 
-          type="password"
-          placeholder="至少 6 位"
-        />
-      </view>
-      
-      <button 
-        class="btn btn-primary" 
-        :disabled="loading"
-        @click="handleRegister"
-      >
-        {{ loading ? '注册中...' : '注册' }}
-      </button>
-    </view>
-
-    <!-- 提示信息 -->
-    <view v-if="mode === 'login'" class="tips">
-      <text class="tips-title">💡 首次使用？</text>
-      <text class="tips-text">切换到"注册"标签，输入家庭名称、用户名和密码，注册成功后会获得家庭码</text>
+      <text class="footer-tip">首次使用？点击微信登录即可开始</text>
     </view>
   </view>
 </template>
@@ -140,21 +77,14 @@ import { auth } from '@/api/index';
 export default {
   data() {
     return {
-      mode: 'login',
-      username: '',
-      password: '',
-      familyName: '',
-      familyCode: '',
+      logging: false,
       error: '',
-      loading: false,
-      wechatLogging: false,
     };
   },
   
   methods: {
-    // 微信一键登录
     async handleWechatLogin() {
-      this.wechatLogging = true;
+      this.logging = true;
       this.error = '';
       
       try {
@@ -181,11 +111,22 @@ export default {
         
         // 提示
         if (res.isNewUser) {
-          uni.showToast({
-            title: res.family ? `创建家庭成功！家庭码：${res.family.familyCode}` : '加入家庭成功',
-            icon: 'success',
-            duration: 2000,
-          });
+          if (res.family) {
+            // 创建了新家庭
+            uni.setStorageSync('family_code', res.family.familyCode);
+            uni.showToast({
+              title: `🎉 创建成功！\n家庭码：${res.family.familyCode}`,
+              icon: 'none',
+              duration: 3000,
+            });
+          } else {
+            // 加入了已有家庭
+            uni.showToast({
+              title: '✅ 加入家庭成功',
+              icon: 'success',
+              duration: 2000,
+            });
+          }
         }
         
         // 跳转到首页
@@ -193,85 +134,18 @@ export default {
           uni.reLaunch({
             url: '/pages/index/index',
           });
-        }, 1500);
-        
-      } catch (err) {
-        this.error = err.message || '微信登录失败';
-        uni.showToast({
-          title: this.error,
-          icon: 'none',
-          duration: 3000,
-        });
-      } finally {
-        this.wechatLogging = false;
-      }
-    },
-    
-    async handleLogin() {
-      this.error = '';
-      this.loading = true;
-      
-      try {
-        const res = await auth.login({
-          username: this.username,
-          password: this.password,
-          familyCode: this.familyCode || undefined,
-        });
-        
-        // 保存用户信息
-        uni.setStorageSync('user_info', res.user);
-        
-        // 跳转到首页
-        uni.reLaunch({
-          url: '/pages/index/index',
-        });
-      } catch (err) {
-        this.error = err.message || '登录失败';
-        uni.showToast({
-          title: this.error,
-          icon: 'none',
-        });
-      } finally {
-        this.loading = false;
-        this.password = '';
-      }
-    },
-    
-    async handleRegister() {
-      this.error = '';
-      this.loading = true;
-      
-      try {
-        const res = await auth.register({
-          familyName: this.familyName,
-          username: this.username,
-          password: this.password,
-        });
-        
-        // 保存用户信息
-        uni.setStorageSync('user_info', res.user);
-        
-        uni.showToast({
-          title: `注册成功！家庭码：${res.family.familyCode}`,
-          icon: 'success',
-          duration: 3000,
-        });
-        
-        // 跳转到首页
-        setTimeout(() => {
-          uni.reLaunch({
-            url: '/pages/index/index',
-          });
         }, 2000);
+        
       } catch (err) {
-        this.error = err.message || '注册失败';
+        console.error('Wechat login error:', err);
+        this.error = err.message || '登录失败，请重试';
         uni.showToast({
           title: this.error,
           icon: 'none',
+          duration: 3000,
         });
       } finally {
-        this.loading = false;
-        this.password = '';
+        this.logging = false;
       }
     },
   },
@@ -281,189 +155,223 @@ export default {
 <style scoped>
 .container {
   min-height: 100vh;
-  background: linear-gradient(135deg, #fce7f3 0%, #f3e8ff 50%, #dbeafe 100%);
-  padding-top: calc(80rpx + env(safe-area-inset-top));
-  padding-left: 40rpx;
-  padding-right: 40rpx;
-  padding-bottom: calc(40rpx + env(safe-area-inset-bottom));
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  position: relative;
+  overflow: hidden;
 }
 
+/* 顶部装饰 */
+.top-decoration {
+  position: absolute;
+  top: -100rpx;
+  left: 0;
+  right: 0;
+  height: 300rpx;
+  overflow: hidden;
+}
+
+.circle {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.circle-1 {
+  width: 200rpx;
+  height: 200rpx;
+  top: 50rpx;
+  left: 10%;
+}
+
+.circle-2 {
+  width: 150rpx;
+  height: 150rpx;
+  top: 100rpx;
+  right: 15%;
+}
+
+.circle-3 {
+  width: 100rpx;
+  height: 100rpx;
+  top: 20rpx;
+  right: 40%;
+}
+
+/* 头部 */
 .header {
+  padding-top: calc(120rpx + env(safe-area-inset-top));
   text-align: center;
-  margin-bottom: 40rpx;
+  margin-bottom: 60rpx;
+}
+
+.logo-box {
+  width: 160rpx;
+  height: 160rpx;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 40rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 32rpx;
+  backdrop-filter: blur(10rpx);
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.1);
+}
+
+.logo {
+  font-size: 80rpx;
 }
 
 .title {
+  display: block;
   font-size: 48rpx;
   font-weight: bold;
-  color: #9333ea;
-  display: block;
+  color: #ffffff;
   margin-bottom: 16rpx;
+  text-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.2);
 }
 
 .subtitle {
-  font-size: 28rpx;
-  color: #6b7280;
   display: block;
+  font-size: 28rpx;
+  color: rgba(255, 255, 255, 0.85);
+  letter-spacing: 2rpx;
+}
+
+/* 内容区 */
+.content {
+  padding: 0 40rpx;
+  margin-bottom: 60rpx;
 }
 
 /* 微信登录按钮 */
 .btn-wechat {
   width: 100%;
-  height: 88rpx;
-  background: #07c160;
-  color: #ffffff;
-  border-radius: 16rpx;
+  background: #ffffff;
+  border-radius: 24rpx;
+  padding: 0;
+  margin-bottom: 32rpx;
+  box-shadow: 0 8rpx 40rpx rgba(0, 0, 0, 0.15);
+  transition: all 0.3s;
+}
+
+.btn-wechat:active {
+  transform: scale(0.98);
+}
+
+.btn-wechat:disabled {
+  opacity: 0.7;
+}
+
+.btn-wechat-content {
+  display: flex;
+  align-items: center;
+  padding: 36rpx 32rpx;
+}
+
+.btn-wechat-icon {
+  font-size: 56rpx;
+  margin-right: 24rpx;
+  flex-shrink: 0;
+}
+
+.btn-wechat-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.btn-main {
+  display: block;
+  font-size: 34rpx;
+  font-weight: bold;
+  color: #07c160;
+  margin-bottom: 8rpx;
+}
+
+.btn-sub {
+  display: block;
+  font-size: 24rpx;
+  color: #9ca3af;
+}
+
+/* 加载状态 */
+.loading {
+  text-align: center;
+  padding: 24rpx;
+}
+
+.loading-text {
+  display: inline-block;
+  font-size: 28rpx;
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.2);
+  padding: 16rpx 32rpx;
+  border-radius: 32rpx;
+  backdrop-filter: blur(10rpx);
+}
+
+/* 错误提示 */
+.error-box {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 12rpx;
-  margin-bottom: 24rpx;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 16rpx;
+  padding: 24rpx;
+  backdrop-filter: blur(10rpx);
+}
+
+.error-icon {
   font-size: 32rpx;
-  font-weight: 600;
 }
 
-.btn-wechat:disabled {
-  background: #9ca3af;
+.error-text {
+  font-size: 26rpx;
+  color: #ffffff;
 }
 
-.btn-wechat-icon {
-  font-size: 36rpx;
+/* 底部 */
+.footer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 48rpx 48rpx 0 0;
+  padding: 48rpx 40rpx calc(40rpx + env(safe-area-inset-bottom));
+  box-shadow: 0 -4rpx 24rpx rgba(0, 0, 0, 0.1);
 }
 
-.btn-wechat-text {
-  display: block;
+.feature-list {
+  margin-bottom: 32rpx;
 }
 
-/* 分隔线 */
-.divider {
+.feature-item {
   display: flex;
   align-items: center;
-  margin: 32rpx 0;
+  margin-bottom: 20rpx;
 }
 
-.divider::before,
-.divider::after {
-  content: '';
+.feature-icon {
+  font-size: 32rpx;
+  margin-right: 16rpx;
+  flex-shrink: 0;
+}
+
+.feature-text {
+  font-size: 28rpx;
+  color: #4b5563;
   flex: 1;
-  height: 1rpx;
-  background: #e5e7eb;
 }
 
-.divider-text {
-  padding: 0 24rpx;
-  color: #9ca3af;
-  font-size: 24rpx;
-}
-
-.tabs {
-  display: flex;
-  gap: 16rpx;
-  margin-bottom: 40rpx;
-}
-
-.tab {
-  flex: 1;
+.footer-tip {
+  display: block;
   text-align: center;
-  padding: 16rpx;
-  background: #f3f4f6;
-  color: #4b5563;
-  border-radius: 16rpx;
-  font-size: 28rpx;
-  font-weight: 500;
-}
-
-.tab.active {
-  background: #9333ea;
-  color: #ffffff;
-}
-
-.error {
-  background: #fef2f2;
-  border: 1rpx solid #fecaca;
-  color: #dc2626;
-  padding: 24rpx;
-  border-radius: 16rpx;
-  margin-bottom: 24rpx;
-  font-size: 26rpx;
-}
-
-.form {
-  background: #ffffff;
-  border-radius: 32rpx;
-  padding: 32rpx;
-  box-shadow: 0 4rpx 24rpx rgba(0, 0, 0, 0.1);
-}
-
-.form-item {
-  margin-bottom: 24rpx;
-}
-
-.label {
-  display: block;
-  font-size: 26rpx;
-  color: #374151;
-  margin-bottom: 12rpx;
-  font-weight: 500;
-}
-
-.input {
-  width: 100%;
-  height: 80rpx;
-  border: 2rpx solid #e5e7eb;
-  border-radius: 16rpx;
-  padding: 0 24rpx;
-  font-size: 28rpx;
-  background: #f9fafb;
-}
-
-.tip {
-  display: block;
-  font-size: 22rpx;
+  font-size: 24rpx;
   color: #9ca3af;
-  margin-top: 8rpx;
-}
-
-.btn {
-  width: 100%;
-  height: 88rpx;
-  border-radius: 16rpx;
-  font-size: 32rpx;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-top: 32rpx;
-}
-
-.btn-primary {
-  background: linear-gradient(135deg, #9333ea 0%, #ec4899 100%);
-  color: #ffffff;
-}
-
-.btn-primary:disabled {
-  background: #9ca3af;
-}
-
-.tips {
-  margin-top: 32rpx;
-  background: #f9fafb;
-  border-radius: 16rpx;
-  padding: 24rpx;
-}
-
-.tips-title {
-  display: block;
-  font-size: 26rpx;
-  color: #4b5563;
-  font-weight: 500;
-  margin-bottom: 12rpx;
-}
-
-.tips-text {
-  display: block;
-  font-size: 22rpx;
-  color: #9ca3af;
-  line-height: 1.6;
+  padding-top: 24rpx;
+  border-top: 1rpx solid #e5e7eb;
 }
 </style>
