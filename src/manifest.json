@@ -58,10 +58,9 @@
         },
         "usingComponents" : true,
         "permission" : {},
-        /* 导航栏配置：透明背景，与页面融为一体 */
+        /* 导航栏配置：所有页面使用自定义导航栏 */
         "navigationBarTextStyle" : "white",
-        "navigationBarTitleText" : "宝宝奖励计划",
-        "navigationBarBackgroundColor" : "#f0abfc"
+        "navigationStyle": "custom"
     },
     "mp-alipay" : {
         "usingComponents" : true
