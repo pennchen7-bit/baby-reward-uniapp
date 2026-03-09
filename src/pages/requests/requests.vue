@@ -5,9 +5,6 @@
       <text class="title">🔔 审批请求</text>
       <text class="subtitle">{{ pendingCount }} 个待批准</text>
     </view>
-
-    <!-- 筛选 -->
-    <view class="filter-section">
       <view class="filter-list">
         <view 
           v-for="item in filters" 
@@ -224,7 +221,7 @@ export default {
 .header {
   text-align: center;
   padding: 0 40rpx;
-  margin-bottom: 32rpx;
+  margin-bottom: 24rpx;
 }
 
 .title {

@@ -4,22 +4,24 @@
     <view class="header">
       <text class="title">🎁 宝宝奖励计划</text>
       <text class="subtitle">{{ subtitleText }}</text>
-      
-      <!-- 用户信息 -->
-      <view v-if="userInfo" class="user-info">
-        <text class="user-tag">
-          👤 {{ userInfo.username }}
-          <text v-if="userInfo.role === 'baby'" class="role-badge baby">宝宝</text>
-          <text v-else-if="userInfo.role === 'parent'" class="role-badge parent">家长</text>
-          <text v-else-if="userInfo.role === 'admin'" class="role-badge admin">管理员</text>
-        </text>
-        <text v-if="userInfo.familyCode" class="family-code">
-          🔑 {{ userInfo.familyCode }}
-        </text>
-      </view>
-      
-      <!-- 邀请按钮（管理员/家长显示在底部） -->
-      <button v-if="isAdminOrParent" class="btn-invite-bottom" @click="goToInvite">
+    </view>
+    
+    <!-- 用户信息卡片 -->
+    <view v-if="userInfo" class="user-card">
+      <text class="user-tag">
+        👤 {{ userInfo.username }}
+        <text v-if="userInfo.role === 'baby'" class="role-badge baby">宝宝</text>
+        <text v-else-if="userInfo.role === 'parent'" class="role-badge parent">家长</text>
+        <text v-else-if="userInfo.role === 'admin'" class="role-badge admin">管理员</text>
+      </text>
+      <text v-if="userInfo.familyCode" class="family-code">
+        🔑 {{ userInfo.familyCode }}
+      </text>
+    </view>
+    
+    <!-- 邀请按钮（管理员/家长） -->
+    <view v-if="isAdminOrParent" class="invite-section">
+      <button class="btn-invite" @click="goToInvite">
         <text class="invite-icon">📧</text>
         <text class="invite-text">邀请家人</text>
       </button>
@@ -491,7 +493,7 @@ export default {
 
 .header {
   text-align: center;
-  margin-bottom: 32rpx;
+  margin-bottom: 24rpx;
 }
 
 .title {
@@ -499,6 +501,7 @@ export default {
   font-weight: bold;
   color: #ffffff;
   display: block;
+  margin-bottom: 8rpx;
   text-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.15);
 }
 
@@ -508,8 +511,13 @@ export default {
   display: block;
 }
 
-.user-info {
-  margin-top: 24rpx;
+/* 用户信息卡片 */
+.user-card {
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10rpx);
+  border-radius: 20rpx;
+  padding: 20rpx 28rpx;
+  margin-bottom: 20rpx;
   display: flex;
   justify-content: center;
   gap: 12rpx;
@@ -518,29 +526,47 @@ export default {
 }
 
 .user-tag {
-  background: rgba(255, 255, 255, 0.2);
-  color: #ffffff;
+  background: rgba(255, 255, 255, 0.6);
+  color: #4b5563;
   padding: 8rpx 16rpx;
   border-radius: 16rpx;
   font-size: 24rpx;
-  backdrop-filter: blur(10rpx);
+  display: flex;
+  align-items: center;
+  gap: 6rpx;
 }
 
 .family-code {
-  background: rgba(255, 255, 255, 0.2);
+  background: linear-gradient(135deg, #f0abfc 0%, #818cf8 100%);
   color: #ffffff;
   padding: 8rpx 16rpx;
   border-radius: 16rpx;
   font-size: 24rpx;
-  backdrop-filter: blur(10rpx);
+  font-weight: 600;
 }
 
-/* 邀请按钮 - 底部独立显示 */
-.btn-invite-bottom {
-  margin-top: 24rpx;
-  background: rgba(255, 255, 255, 0.95);
+.role-badge {
+  padding: 2rpx 8rpx;
+  border-radius: 10rpx;
+  font-size: 18rpx;
+  margin-left: 4rpx;
+}
+
+.role-badge.baby { background: #fce7f3; color: #ec4899; }
+.role-badge.parent { background: #dcfce7; color: #22c55e; }
+.role-badge.admin { background: #ede9fe; color: #9333ea; }
+
+/* 邀请按钮区域 */
+.invite-section {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 24rpx;
+}
+
+.btn-invite {
+  background: #ffffff;
   color: #07c160;
-  padding: 16rpx 32rpx;
+  padding: 14rpx 32rpx;
   border-radius: 44rpx;
   display: inline-flex;
   align-items: center;
@@ -550,9 +576,8 @@ export default {
   box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.1);
 }
 
-.btn-invite-bottom:active {
+.btn-invite:active {
   transform: scale(0.97);
-  background: rgba(255, 255, 255, 1);
 }
 
 .invite-icon {

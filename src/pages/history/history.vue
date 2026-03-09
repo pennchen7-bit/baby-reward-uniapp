@@ -112,21 +112,22 @@ export default {
 
 .header {
   text-align: center;
-  margin-bottom: 32rpx;
+  margin-bottom: 24rpx;
 }
 
 .title {
   display: block;
   font-size: 40rpx;
   font-weight: bold;
-  color: #1f2937;
+  color: #ffffff;
   margin-bottom: 8rpx;
+  text-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.15);
 }
 
 .subtitle {
   display: block;
-  font-size: 26rpx;
-  color: #6b7280;
+  font-size: 24rpx;
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .filter {
