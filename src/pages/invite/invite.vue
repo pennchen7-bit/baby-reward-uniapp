@@ -63,17 +63,23 @@
         <text class="invite-info-text">{{ displayLink }}</text>
       </view>
       
-      <button class="btn-share" @click="handleShare">
+      <button class="btn-share" open-type="share">
         <text class="share-icon">📤</text>
-        <text class="share-text">复制链接并分享</text>
+        <text class="share-text">分享给微信好友</text>
+      </button>
+      
+      <button class="btn-timeline" open-type="shareTimeline">
+        <text class="timeline-icon">🔄</text>
+        <text class="timeline-text">分享到朋友圈</text>
       </button>
       
       <view class="tips">
         <text class="tips-title">💡 使用说明</text>
-        <text class="tips-text">1. 点击"复制链接并分享"发送链接</text>
-        <text class="tips-text">2. 对方点击链接后自动跳转到登录页</text>
-        <text class="tips-text">3. 微信登录后自动加入你的家庭</text>
-        <text class="tips-text">4. 链接 24 小时内有效</text>
+        <text class="tips-text">1. 点击"分享给微信好友"发送小程序卡片</text>
+        <text class="tips-text">2. 或点击"分享到朋友圈"分享到微信朋友圈</text>
+        <text class="tips-text">3. 对方点击卡片后自动跳转到登录页</text>
+        <text class="tips-text">4. 微信登录后自动加入你的家庭</text>
+        <text class="tips-text">5. 链接 24 小时内有效</text>
       </view>
     </view>
   </view>
@@ -99,6 +105,23 @@ export default {
       this.familyName = user.familyName || '';
       this.familyCode = user.familyCode || '';
     }
+  },
+  
+  // 小程序分享配置
+  onShareAppMessage() {
+    return {
+      title: `🎁 邀请你加入${this.familyName}家庭`,
+      path: `${this.inviteLink}&familyName=${encodeURIComponent(this.familyName)}`,
+      imageUrl: ''
+    };
+  },
+  
+  // 分享到朋友圈
+  onShareTimeline() {
+    return {
+      title: `🎁 邀请你加入${this.familyName}家庭`,
+      query: `${this.inviteLink}&familyName=${encodeURIComponent(this.familyName)}`,
+    };
   },
   
   methods: {
@@ -390,7 +413,7 @@ export default {
   gap: 12rpx;
   font-size: 32rpx;
   font-weight: 600;
-  margin-bottom: 24rpx;
+  margin-bottom: 16rpx;
 }
 
 .share-icon {
@@ -398,6 +421,30 @@ export default {
 }
 
 .share-text {
+  display: block;
+}
+
+.btn-timeline {
+  width: 100%;
+  height: 80rpx;
+  background: rgba(7, 193, 96, 0.1);
+  color: #07c160;
+  border-radius: 40rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10rpx;
+  font-size: 28rpx;
+  font-weight: 500;
+  margin-bottom: 24rpx;
+  border: 2rpx solid #07c160;
+}
+
+.timeline-icon {
+  font-size: 32rpx;
+}
+
+.timeline-text {
   display: block;
 }
 
