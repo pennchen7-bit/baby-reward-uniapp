@@ -45,7 +45,17 @@ export default {
       logging: false,
       canLogin: false,
       error: '',
+      inviteCode: '',
     };
+  },
+  
+  onLoad(options) {
+    // 解析 URL 参数中的邀请码
+    if (options.inviteCode) {
+      this.inviteCode = options.inviteCode;
+      // 保存到 storage，登录后使用
+      uni.setStorageSync('invite_code', options.inviteCode);
+    }
   },
   
   onReady() {

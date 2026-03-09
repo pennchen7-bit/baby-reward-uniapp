@@ -59,24 +59,21 @@
     <view v-if="inviteLink" class="invite-result">
       <text class="result-title">✅ 邀请链接已生成</text>
       
+      <view class="invite-info">
+        <text class="invite-info-text">{{ displayLink }}</text>
+      </view>
+      
       <button class="btn-share" @click="handleShare">
         <text class="share-icon">📤</text>
-        <text class="share-text">分享给微信好友</text>
+        <text class="share-text">复制链接并分享</text>
       </button>
-      
-      <view class="copy-section">
-        <text class="copy-label">或复制链接</text>
-        <view class="copy-box">
-          <text class="copy-text">{{ inviteLink }}</text>
-          <button class="btn-copy" @click="handleCopy">复制</button>
-        </view>
-      </view>
       
       <view class="tips">
         <text class="tips-title">💡 使用说明</text>
-        <text class="tips-text">1. 点击"分享给微信好友"发送链接</text>
-        <text class="tips-text">2. 对方点击链接后微信授权即可加入</text>
-        <text class="tips-text">3. 链接 24 小时内有效</text>
+        <text class="tips-text">1. 点击"复制链接并分享"发送链接</text>
+        <text class="tips-text">2. 对方点击链接后自动跳转到登录页</text>
+        <text class="tips-text">3. 微信登录后自动加入你的家庭</text>
+        <text class="tips-text">4. 链接 24 小时内有效</text>
       </view>
     </view>
   </view>
@@ -114,7 +111,10 @@ export default {
       
       try {
         const res = await invite.generate({ role: this.role });
+        // 保存完整的邀请链接（小程序路径）
         this.inviteLink = res.inviteLink;
+        // 同时保存用于显示的短链接
+        this.displayLink = `家庭码：${this.familyCode} | 角色：${this.role === 'parent' ? '家长' : '宝宝'}`;
         
         uni.showToast({
           title: '生成成功',
@@ -133,8 +133,11 @@ export default {
     
     handleShare() {
       if (this.inviteLink) {
+        // 生成小程序 URL Scheme（可以打开小程序的链接）
+        const urlScheme = `https://your-app-id.page.link?url=${encodeURIComponent(this.inviteLink)}`;
+        
         uni.setClipboardData({
-          data: this.inviteLink,
+          data: `点击链接加入我的家庭：${urlScheme}\n${this.displayLink}`,
           success: () => {
             uni.showModal({
               title: '已复制',
@@ -358,6 +361,21 @@ export default {
   color: #059669;
   margin-bottom: 24rpx;
   text-align: center;
+}
+
+.invite-info {
+  background: rgba(240, 171, 252, 0.15);
+  border-radius: 16rpx;
+  padding: 20rpx;
+  margin-bottom: 24rpx;
+}
+
+.invite-info-text {
+  display: block;
+  font-size: 26rpx;
+  color: #4b5563;
+  text-align: center;
+  line-height: 1.8;
 }
 
 .btn-share {
