@@ -127,6 +127,22 @@
       </scroll-view>
     </view>
 
+    <!-- 底部导航 -->
+    <view class="tabbar">
+      <view class="tabbar-item" @click="goTo('/pages/history/history')">
+        <text class="icon">📜</text>
+        <text class="label">历史</text>
+      </view>
+      <view v-if="isAdminOrParent" class="tabbar-item" @click="goTo('/pages/requests/requests')">
+        <text class="icon">🔔</text>
+        <text class="label">审批</text>
+      </view>
+      <view class="tabbar-item" @click="handleLogout">
+        <text class="icon">🚪</text>
+        <text class="label">退出</text>
+      </view>
+    </view>
+
     <!-- 审批弹窗 -->
     <view v-if="showApproval" class="modal-overlay" @click="showApproval = false">
       <view class="modal-content" @click.stop>
@@ -506,6 +522,7 @@ export default {
   padding: 24rpx 28rpx;
   margin-bottom: 24rpx;
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
   gap: 20rpx;
@@ -900,6 +917,38 @@ export default {
   color: #9333ea;
   font-size: 26rpx;
   font-weight: 600;
+}
+
+/* 底部导航 */
+.tabbar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  background: #ffffff;
+  border-radius: 32rpx 32rpx 0 0;
+  padding: 16rpx;
+  box-shadow: 0 -4rpx 24rpx rgba(0, 0, 0, 0.08);
+  z-index: 100;
+}
+
+.tabbar-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6rpx;
+  padding: 16rpx;
+}
+
+.icon {
+  font-size: 40rpx;
+}
+
+.label {
+  font-size: 20rpx;
+  color: #6b7280;
 }
 
 /* 审批弹窗 */
