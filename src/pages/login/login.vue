@@ -12,24 +12,20 @@
       <view class="login-box">
         <button 
           class="btn-wechat"
-          :disabled="!canLogin"
+          :disabled="!canLogin || logging"
           @click="handleWechatLogin"
         >
           <view class="btn-content">
             <text class="btn-icon">💬</text>
-            <text class="btn-text">微信一键登录</text>
+            <text class="btn-text">{{ logging ? '登录中...' : '微信一键登录' }}</text>
           </view>
         </button>
 
         <text class="btn-desc">
-          <text v-if="canLogin">首次登录自动创建家庭 · 邀请家人共同成长</text>
-          <text v-else>正在初始化...</text>
+          <text v-if="!canLogin">正在初始化...</text>
+          <text v-else-if="logging">请稍候，正在登录...</text>
+          <text v-else>首次登录自动创建家庭 · 邀请家人共同成长</text>
         </text>
-
-        <!-- 加载状态 -->
-        <view v-if="logging" class="loading">
-          <text class="loading-text">登录中...</text>
-        </view>
       </view>
 
       <!-- 错误提示 -->
