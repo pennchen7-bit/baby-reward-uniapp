@@ -1,51 +1,42 @@
 <template>
   <view class="container">
-    <!-- 顶部装饰 -->
-    <view class="top-decoration">
-      <view class="circle circle-1"></view>
-      <view class="circle circle-2"></view>
-      <view class="circle circle-3"></view>
-    </view>
-
-    <!-- Logo 和标题 -->
+    <!-- 头部标题区 -->
     <view class="header">
-      <view class="logo-box">
-        <text class="logo">🎁</text>
-      </view>
-      <text class="title">宝宝奖励计划</text>
+      <text class="title">🎁 宝宝奖励计划</text>
       <text class="subtitle">记录成长，奖励进步</text>
     </view>
 
     <!-- 主要内容区 -->
     <view class="content">
       <!-- 微信登录按钮 -->
-      <button 
-        class="btn-wechat"
-        :disabled="logging"
-        @click="handleWechatLogin"
-      >
-        <view class="btn-wechat-content">
-          <text class="btn-wechat-icon">💬</text>
-          <view class="btn-wechat-text">
-            <text class="btn-main">微信一键登录</text>
-            <text class="btn-sub">安全便捷，自动创建家庭</text>
+      <view class="login-box">
+        <button 
+          class="btn-wechat"
+          :disabled="logging"
+          @click="handleWechatLogin"
+        >
+          <view class="btn-wechat-content">
+            <text class="btn-wechat-icon">💬</text>
+            <view class="btn-wechat-text">
+              <text class="btn-main">微信一键登录</text>
+              <text class="btn-sub">首次登录自动创建家庭</text>
+            </view>
           </view>
-        </view>
-      </button>
+        </button>
 
-      <!-- 加载状态 -->
-      <view v-if="logging" class="loading">
-        <text class="loading-text">登录中...</text>
+        <!-- 加载状态 -->
+        <view v-if="logging" class="loading">
+          <text class="loading-text">登录中...</text>
+        </view>
       </view>
 
       <!-- 错误提示 -->
       <view v-if="error" class="error-box">
-        <text class="error-icon">⚠️</text>
         <text class="error-text">{{ error }}</text>
       </view>
     </view>
 
-    <!-- 底部说明 -->
+    <!-- 底部功能说明 -->
     <view class="footer">
       <view class="feature-list">
         <view class="feature-item">
@@ -66,7 +57,7 @@
         </view>
       </view>
       
-      <text class="footer-tip">首次使用？点击微信登录即可开始</text>
+      <text class="footer-tip">💡 点击微信登录即可开始</text>
     </view>
   </view>
 </template>
@@ -155,107 +146,69 @@ export default {
 <style scoped>
 .container {
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  position: relative;
-  overflow: hidden;
-}
-
-/* 顶部装饰 */
-.top-decoration {
-  position: absolute;
-  top: -100rpx;
-  left: 0;
-  right: 0;
-  height: 300rpx;
-  overflow: hidden;
-}
-
-.circle {
-  position: absolute;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.1);
-}
-
-.circle-1 {
-  width: 200rpx;
-  height: 200rpx;
-  top: 50rpx;
-  left: 10%;
-}
-
-.circle-2 {
-  width: 150rpx;
-  height: 150rpx;
-  top: 100rpx;
-  right: 15%;
-}
-
-.circle-3 {
-  width: 100rpx;
-  height: 100rpx;
-  top: 20rpx;
-  right: 40%;
-}
-
-/* 头部 */
-.header {
-  padding-top: calc(120rpx + env(safe-area-inset-top));
-  text-align: center;
-  margin-bottom: 60rpx;
-}
-
-.logo-box {
-  width: 160rpx;
-  height: 160rpx;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 40rpx;
+  background: linear-gradient(135deg, #fce7f3 0%, #f3e8ff 50%, #dbeafe 100%);
+  padding-top: calc(60rpx + env(safe-area-inset-top));
+  padding-left: 40rpx;
+  padding-right: 40rpx;
+  padding-bottom: calc(40rpx + env(safe-area-inset-bottom));
   display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 32rpx;
-  backdrop-filter: blur(10rpx);
-  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.1);
+  flex-direction: column;
 }
 
-.logo {
-  font-size: 80rpx;
+/* 头部 - 与微信右上角对齐 */
+.header {
+  text-align: center;
+  margin-bottom: 40rpx;
+  padding-top: 20rpx;
 }
 
 .title {
-  display: block;
-  font-size: 48rpx;
+  font-size: 40rpx;
   font-weight: bold;
-  color: #ffffff;
-  margin-bottom: 16rpx;
-  text-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.2);
+  color: #9333ea;
+  display: block;
+  margin-bottom: 12rpx;
 }
 
 .subtitle {
+  font-size: 26rpx;
+  color: #6b7280;
   display: block;
-  font-size: 28rpx;
-  color: rgba(255, 255, 255, 0.85);
-  letter-spacing: 2rpx;
 }
 
 /* 内容区 */
 .content {
-  padding: 0 40rpx;
-  margin-bottom: 60rpx;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 40rpx;
+}
+
+/* 登录按钮区域 */
+.login-box {
+  width: 100%;
+  max-width: 600rpx;
 }
 
 /* 微信登录按钮 */
 .btn-wechat {
   width: 100%;
-  background: #ffffff;
+  height: 120rpx;
+  background: linear-gradient(135deg, #07c160 0%, #05a350 100%);
+  color: #ffffff;
   border-radius: 24rpx;
-  padding: 0;
-  margin-bottom: 32rpx;
-  box-shadow: 0 8rpx 40rpx rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8rpx 32rpx rgba(7, 193, 96, 0.4);
   transition: all 0.3s;
+  margin-bottom: 24rpx;
 }
 
 .btn-wechat:active {
   transform: scale(0.98);
+  box-shadow: 0 4rpx 16rpx rgba(7, 193, 96, 0.3);
 }
 
 .btn-wechat:disabled {
@@ -265,17 +218,16 @@ export default {
 .btn-wechat-content {
   display: flex;
   align-items: center;
-  padding: 36rpx 32rpx;
+  justify-content: center;
+  width: 100%;
 }
 
 .btn-wechat-icon {
-  font-size: 56rpx;
-  margin-right: 24rpx;
-  flex-shrink: 0;
+  font-size: 48rpx;
+  margin-right: 20rpx;
 }
 
 .btn-wechat-text {
-  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -283,75 +235,62 @@ export default {
 
 .btn-main {
   display: block;
-  font-size: 34rpx;
+  font-size: 36rpx;
   font-weight: bold;
-  color: #07c160;
-  margin-bottom: 8rpx;
+  color: #ffffff;
+  margin-bottom: 6rpx;
 }
 
 .btn-sub {
   display: block;
   font-size: 24rpx;
-  color: #9ca3af;
+  color: rgba(255, 255, 255, 0.9);
 }
 
 /* 加载状态 */
 .loading {
   text-align: center;
-  padding: 24rpx;
+  padding: 20rpx;
 }
 
 .loading-text {
   display: inline-block;
   font-size: 28rpx;
-  color: rgba(255, 255, 255, 0.9);
-  background: rgba(255, 255, 255, 0.2);
-  padding: 16rpx 32rpx;
-  border-radius: 32rpx;
-  backdrop-filter: blur(10rpx);
+  color: #6b7280;
 }
 
 /* 错误提示 */
 .error-box {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12rpx;
-  background: rgba(255, 255, 255, 0.2);
+  background: #fef2f2;
+  border: 1rpx solid #fecaca;
   border-radius: 16rpx;
   padding: 24rpx;
-  backdrop-filter: blur(10rpx);
-}
-
-.error-icon {
-  font-size: 32rpx;
+  margin-top: 20rpx;
 }
 
 .error-text {
+  display: block;
+  text-align: center;
   font-size: 26rpx;
-  color: #ffffff;
+  color: #dc2626;
 }
 
-/* 底部 */
+/* 底部功能说明 */
 .footer {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 48rpx 48rpx 0 0;
-  padding: 48rpx 40rpx calc(40rpx + env(safe-area-inset-bottom));
-  box-shadow: 0 -4rpx 24rpx rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 32rpx;
+  padding: 32rpx;
+  backdrop-filter: blur(10rpx);
 }
 
 .feature-list {
-  margin-bottom: 32rpx;
+  margin-bottom: 24rpx;
 }
 
 .feature-item {
   display: flex;
   align-items: center;
-  margin-bottom: 20rpx;
+  margin-bottom: 16rpx;
 }
 
 .feature-icon {
@@ -361,9 +300,8 @@ export default {
 }
 
 .feature-text {
-  font-size: 28rpx;
+  font-size: 26rpx;
   color: #4b5563;
-  flex: 1;
 }
 
 .footer-tip {
@@ -371,7 +309,7 @@ export default {
   text-align: center;
   font-size: 24rpx;
   color: #9ca3af;
-  padding-top: 24rpx;
-  border-top: 1rpx solid #e5e7eb;
+  padding-top: 20rpx;
+  border-top: 1rpx solid rgba(0, 0, 0, 0.1);
 }
 </style>
