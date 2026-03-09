@@ -122,7 +122,15 @@ export default {
       this.fetchRequests();
     }, 5000);
     
-    this.$onUnload(() => clearInterval(interval));
+    // 保存 interval 以便页面卸载时清除
+    this.pollInterval = interval;
+  },
+  
+  onUnload() {
+    // 清除轮询定时器
+    if (this.pollInterval) {
+      clearInterval(this.pollInterval);
+    }
   },
   
   methods: {
