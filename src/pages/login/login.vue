@@ -15,14 +15,13 @@
           :disabled="logging"
           @click="handleWechatLogin"
         >
-          <view class="btn-wechat-content">
-            <text class="btn-wechat-icon">💬</text>
-            <view class="btn-wechat-text">
-              <text class="btn-main">微信一键登录</text>
-              <text class="btn-sub">首次登录自动创建家庭</text>
-            </view>
+          <view class="btn-content">
+            <text class="btn-icon">💬</text>
+            <text class="btn-text">微信一键登录</text>
           </view>
         </button>
+
+        <text class="btn-desc">首次登录自动创建家庭 · 邀请家人共同成长</text>
 
         <!-- 加载状态 -->
         <view v-if="logging" class="loading">
@@ -45,19 +44,17 @@
         </view>
         <view class="feature-item">
           <text class="feature-icon">🏠</text>
-          <text class="feature-text">首次登录自动创建家庭</text>
+          <text class="feature-text">自动创建家庭</text>
         </view>
         <view class="feature-item">
           <text class="feature-icon">👨‍👩‍👧‍👦</text>
-          <text class="feature-text">邀请家人，共同成长</text>
+          <text class="feature-text">邀请家人加入</text>
         </view>
         <view class="feature-item">
           <text class="feature-icon">🎰</text>
-          <text class="feature-text">抽奖激励，快乐成长</text>
+          <text class="feature-text">抽奖激励成长</text>
         </view>
       </view>
-      
-      <text class="footer-tip">💡 点击微信登录即可开始</text>
     </view>
   </view>
 </template>
@@ -79,39 +76,30 @@ export default {
       this.error = '';
       
       try {
-        // 调用微信登录
         const { code } = await uni.login({ provider: 'weixin' });
         
-        // 检查是否有邀请码（从 URL 参数或 storage）
         const inviteCode = uni.getStorageSync('invite_code') || '';
         const inviteRole = uni.getStorageSync('invite_role') || '';
         
-        // 调用后端微信登录 API
         const res = await auth.wechatLogin({
           code,
           familyCode: inviteCode || undefined,
           role: inviteRole || undefined,
         });
         
-        // 清除邀请信息
         uni.removeStorageSync('invite_code');
         uni.removeStorageSync('invite_role');
-        
-        // 保存用户信息
         uni.setStorageSync('user_info', res.user);
         
-        // 提示
         if (res.isNewUser) {
           if (res.family) {
-            // 创建了新家庭
             uni.setStorageSync('family_code', res.family.familyCode);
             uni.showToast({
-              title: `🎉 创建成功！\n家庭码：${res.family.familyCode}`,
+              title: `🎉 创建成功！家庭码：${res.family.familyCode}`,
               icon: 'none',
               duration: 3000,
             });
           } else {
-            // 加入了已有家庭
             uni.showToast({
               title: '✅ 加入家庭成功',
               icon: 'success',
@@ -120,7 +108,6 @@ export default {
           }
         }
         
-        // 跳转到首页
         setTimeout(() => {
           uni.reLaunch({
             url: '/pages/index/index',
@@ -146,8 +133,8 @@ export default {
 <style scoped>
 .container {
   min-height: 100vh;
-  background: linear-gradient(135deg, #fce7f3 0%, #f3e8ff 50%, #dbeafe 100%);
-  padding-top: calc(60rpx + env(safe-area-inset-top));
+  background: linear-gradient(180deg, #f0abfc 0%, #818cf8 50%, #60a5fa 100%);
+  padding-top: calc(40rpx + env(safe-area-inset-top));
   padding-left: 40rpx;
   padding-right: 40rpx;
   padding-bottom: calc(40rpx + env(safe-area-inset-bottom));
@@ -155,24 +142,24 @@ export default {
   flex-direction: column;
 }
 
-/* 头部 - 与微信右上角对齐 */
+/* 头部 */
 .header {
   text-align: center;
-  margin-bottom: 40rpx;
-  padding-top: 20rpx;
+  margin-bottom: 60rpx;
 }
 
 .title {
-  font-size: 40rpx;
+  font-size: 44rpx;
   font-weight: bold;
-  color: #9333ea;
+  color: #ffffff;
   display: block;
   margin-bottom: 12rpx;
+  text-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.15);
 }
 
 .subtitle {
   font-size: 26rpx;
-  color: #6b7280;
+  color: rgba(255, 255, 255, 0.9);
   display: block;
 }
 
@@ -181,70 +168,62 @@ export default {
   flex: 1;
   display: flex;
   flex-direction: column;
+  justify-content: center;
   align-items: center;
-  margin-bottom: 40rpx;
 }
 
 /* 登录按钮区域 */
 .login-box {
   width: 100%;
-  max-width: 600rpx;
+  max-width: 560rpx;
 }
 
 /* 微信登录按钮 */
 .btn-wechat {
   width: 100%;
-  height: 120rpx;
-  background: linear-gradient(135deg, #07c160 0%, #05a350 100%);
-  color: #ffffff;
-  border-radius: 24rpx;
+  height: 100rpx;
+  background: #ffffff;
+  border-radius: 50rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 8rpx 32rpx rgba(7, 193, 96, 0.4);
+  box-shadow: 0 12rpx 40rpx rgba(0, 0, 0, 0.15);
   transition: all 0.3s;
-  margin-bottom: 24rpx;
+  margin-bottom: 20rpx;
 }
 
 .btn-wechat:active {
-  transform: scale(0.98);
-  box-shadow: 0 4rpx 16rpx rgba(7, 193, 96, 0.3);
+  transform: scale(0.97);
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.12);
 }
 
 .btn-wechat:disabled {
-  opacity: 0.7;
+  opacity: 0.8;
 }
 
-.btn-wechat-content {
+.btn-content {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 100%;
 }
 
-.btn-wechat-icon {
-  font-size: 48rpx;
-  margin-right: 20rpx;
+.btn-icon {
+  font-size: 44rpx;
+  margin-right: 16rpx;
 }
 
-.btn-wechat-text {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
+.btn-text {
+  font-size: 34rpx;
+  font-weight: 600;
+  color: #07c160;
 }
 
-.btn-main {
+.btn-desc {
   display: block;
-  font-size: 36rpx;
-  font-weight: bold;
-  color: #ffffff;
-  margin-bottom: 6rpx;
-}
-
-.btn-sub {
-  display: block;
+  text-align: center;
   font-size: 24rpx;
-  color: rgba(255, 255, 255, 0.9);
+  color: rgba(255, 255, 255, 0.85);
+  margin-top: 16rpx;
 }
 
 /* 加载状态 */
@@ -255,61 +234,65 @@ export default {
 
 .loading-text {
   display: inline-block;
-  font-size: 28rpx;
-  color: #6b7280;
+  font-size: 26rpx;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 12rpx 28rpx;
+  border-radius: 24rpx;
+  backdrop-filter: blur(10rpx);
 }
 
 /* 错误提示 */
 .error-box {
-  background: #fef2f2;
-  border: 1rpx solid #fecaca;
+  background: rgba(255, 255, 255, 0.95);
   border-radius: 16rpx;
-  padding: 24rpx;
-  margin-top: 20rpx;
+  padding: 20rpx 32rpx;
+  margin-top: 24rpx;
+  width: 100%;
+  max-width: 560rpx;
 }
 
 .error-text {
   display: block;
   text-align: center;
   font-size: 26rpx;
-  color: #dc2626;
+  color: #ef4444;
 }
 
 /* 底部功能说明 */
 .footer {
-  background: rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(20rpx);
   border-radius: 32rpx;
   padding: 32rpx;
-  backdrop-filter: blur(10rpx);
+  margin-top: auto;
 }
 
 .feature-list {
-  margin-bottom: 24rpx;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
 }
 
 .feature-item {
+  width: 48%;
   display: flex;
   align-items: center;
-  margin-bottom: 16rpx;
+  margin-bottom: 20rpx;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 16rpx;
+  padding: 16rpx;
 }
 
 .feature-icon {
   font-size: 32rpx;
-  margin-right: 16rpx;
+  margin-right: 12rpx;
   flex-shrink: 0;
 }
 
 .feature-text {
-  font-size: 26rpx;
-  color: #4b5563;
-}
-
-.footer-tip {
-  display: block;
-  text-align: center;
   font-size: 24rpx;
-  color: #9ca3af;
-  padding-top: 20rpx;
-  border-top: 1rpx solid rgba(0, 0, 0, 0.1);
+  color: #ffffff;
+  flex: 1;
 }
 </style>
