@@ -57,7 +57,11 @@
             "minified" : true
         },
         "usingComponents" : true,
-        "permission" : {}
+        "permission" : {},
+        /* 导航栏配置：透明背景，与页面融为一体 */
+        "navigationBarTextStyle" : "white",
+        "navigationBarTitleText" : "宝宝奖励计划",
+        "navigationBarBackgroundColor" : "#f0abfc"
     },
     "mp-alipay" : {
         "usingComponents" : true

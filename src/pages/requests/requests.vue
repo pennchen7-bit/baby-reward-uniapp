@@ -1,37 +1,52 @@
 <template>
   <view class="container">
+    <!-- 头部 -->
     <view class="header">
       <text class="title">🔔 审批请求</text>
       <text class="subtitle">{{ pendingCount }} 个待批准</text>
     </view>
 
     <!-- 筛选 -->
-    <view class="filter">
-      <view 
-        v-for="item in filters" 
-        :key="item.value"
-        class="filter-item"
-        :class="{ active: currentFilter === item.value }"
-        @click="currentFilter = item.value"
-      >
-        {{ item.label }} ({{ item.count }})
+    <view class="filter-section">
+      <view class="filter-list">
+        <view 
+          v-for="item in filters" 
+          :key="item.value"
+          class="filter-item"
+          :class="{ active: currentFilter === item.value }"
+          @click="handleFilter(item.value)"
+        >
+          <text class="filter-label">{{ item.label }}</text>
+          <text class="filter-count">{{ item.count }}</text>
+        </view>
       </view>
     </view>
 
     <!-- 请求列表 -->
     <scroll-view class="list" scroll-y>
+      <!-- 空状态 -->
+      <view v-if="filteredRequests.length === 0" class="empty-state">
+        <text class="empty-emoji">📭</text>
+        <text class="empty-text">暂无{{ filters.find(f => f.value === currentFilter)?.label }}</text>
+      </view>
+
+      <!-- 请求卡片 -->
       <view v-for="req in filteredRequests" :key="req.id" class="request-card">
-        <view class="request-header">
-          <text class="baby-name">👶 {{ req.babyName }}</text>
+        <view class="request-top">
+          <view class="baby-info">
+            <text class="baby-emoji">👶</text>
+            <text class="baby-name">{{ req.babyName }}</text>
+          </view>
           <text class="status-badge" :class="req.status">
             {{ statusText(req.status) }}
           </text>
         </view>
+        
         <text class="request-time">{{ formatTime(req.createdAt) }}</text>
         
         <view v-if="req.status === 'pending'" class="request-actions">
-          <button class="btn-approve" @click="handleApprove(req, true)">✅ 批准</button>
-          <button class="btn-reject" @click="handleApprove(req, false)">❌ 拒绝</button>
+          <button class="btn-approve" @click="handleApprove(req, true)">批准</button>
+          <button class="btn-reject" @click="handleApprove(req, false)">拒绝</button>
         </view>
         
         <view v-else class="request-reason">
@@ -45,15 +60,18 @@
     <view v-if="showApproval" class="modal-overlay" @click="showApproval = false">
       <view class="modal-content" @click.stop>
         <text class="modal-title">审批请求</text>
+        <text class="modal-subtitle">👶 {{ activeRequest?.babyName }} 申请抽奖</text>
+        
         <textarea 
           class="modal-textarea" 
           v-model="approvalReason"
           placeholder="请填写原因（必填）"
         />
+        
         <view class="modal-actions">
           <button class="btn-cancel" @click="showApproval = false">取消</button>
-          <button class="btn-approve" @click="submitApproval(true)">批准</button>
-          <button class="btn-reject" @click="submitApproval(false)">拒绝</button>
+          <button class="btn-approve-modal" @click="submitApproval(true)">批准</button>
+          <button class="btn-reject-modal" @click="submitApproval(false)">拒绝</button>
         </view>
       </view>
     </view>
@@ -98,35 +116,34 @@ export default {
     this.userInfo = uni.getStorageSync('user_info');
     this.fetchRequests();
     
-    // 轮询
-    setInterval(() => {
+    // 轮询更新
+    const interval = setInterval(() => {
       this.fetchRequests();
-    }, 3000);
+    }, 5000);
+    
+    this.$onUnload(() => clearInterval(interval));
   },
   
   methods: {
+    handleFilter(value) {
+      this.currentFilter = value;
+    },
+    
     async fetchRequests() {
       try {
         const res = await requests.list({
-          familyId: this.userInfo.familyId
+          familyId: this.userInfo?.familyId,
         });
         
         this.allRequests = res.records || [];
-        this.updateFilterCounts();
-      } catch (err) {
-        uni.showToast({
-          title: '加载失败',
-          icon: 'none'
-        });
-      }
-    },
-    
-    updateFilterCounts() {
-      this.filters.forEach(filter => {
-        if (filter.value !== 'all') {
+        
+        // 更新筛选计数
+        this.filters.forEach(filter => {
           filter.count = this.allRequests.filter(r => r.status === filter.value).length;
-        }
-      });
+        });
+      } catch (err) {
+        console.error('Fetch requests error:', err);
+      }
     },
     
     handleApprove(req, approve) {
@@ -137,7 +154,10 @@ export default {
     
     async submitApproval(approve) {
       if (!this.approvalReason.trim()) {
-        uni.showToast({ title: '请填写原因', icon: 'none' });
+        uni.showToast({
+          title: '请填写原因',
+          icon: 'none',
+        });
         return;
       }
       
@@ -146,20 +166,21 @@ export default {
           status: approve ? 'approved' : 'rejected',
           approvedBy: this.userInfo.id,
           approvedByName: this.userInfo.username,
-          reason: this.approvalReason.trim()
+          reason: this.approvalReason.trim(),
         });
         
         uni.showToast({
-          title: approve ? '已批准' : '已拒绝',
-          icon: 'success'
+          title: approve ? '✅ 已批准' : '已拒绝',
+          icon: 'success',
         });
         
         this.showApproval = false;
+        this.approvalReason = '';
         this.fetchRequests();
       } catch (err) {
         uni.showToast({
           title: err.message || '操作失败',
-          icon: 'none'
+          icon: 'none',
         });
       }
     },
@@ -169,19 +190,21 @@ export default {
         pending: '待批准',
         approved: '已批准',
         rejected: '已拒绝',
-        completed: '已完成'
+        completed: '已完成',
       };
       return map[status] || status;
     },
     
     formatTime(timeStr) {
       const date = new Date(timeStr);
-      return date.toLocaleString('zh-CN', {
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
+      const now = new Date();
+      const diff = now - date;
+      
+      if (diff < 60000) return '刚刚';
+      if (diff < 3600000) return `${Math.floor(diff / 60000)}分钟前`;
+      if (diff < 86400000) return `${Math.floor(diff / 3600000)}小时前`;
+      
+      return `${date.getMonth() + 1}月${date.getDate()}日 ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
     },
   },
 };
@@ -190,71 +213,138 @@ export default {
 <style scoped>
 .container {
   min-height: 100vh;
-  background: #f9fafb;
+  background: linear-gradient(180deg, #f0abfc 0%, #818cf8 50%, #60a5fa 100%);
   padding-top: calc(100rpx + env(safe-area-inset-top));
-  padding-left: 32rpx;
-  padding-right: 32rpx;
   padding-bottom: calc(40rpx + env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
 }
 
+/* 头部 */
 .header {
   text-align: center;
+  padding: 0 40rpx;
   margin-bottom: 32rpx;
 }
 
 .title {
-  display: block;
   font-size: 40rpx;
   font-weight: bold;
-  color: #1f2937;
+  color: #ffffff;
+  display: block;
   margin-bottom: 8rpx;
+  text-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.15);
 }
 
 .subtitle {
+  font-size: 24rpx;
+  color: rgba(255, 255, 255, 0.9);
   display: block;
-  font-size: 26rpx;
-  color: #ea580c;
-  font-weight: 600;
 }
 
-.filter {
-  display: flex;
-  gap: 16rpx;
+/* 筛选区域 */
+.filter-section {
+  padding: 0 32rpx;
   margin-bottom: 24rpx;
+}
+
+.filter-list {
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10rpx);
+  border-radius: 20rpx;
+  padding: 16rpx;
+  display: flex;
+  gap: 12rpx;
   overflow-x: auto;
 }
 
 .filter-item {
-  padding: 12rpx 24rpx;
-  background: #ffffff;
-  border-radius: 28rpx;
-  font-size: 24rpx;
-  color: #6b7280;
-  white-space: nowrap;
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 16rpx;
+  padding: 12rpx 20rpx;
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  transition: all 0.3s;
 }
 
 .filter-item.active {
-  background: #9333ea;
+  background: linear-gradient(135deg, #f0abfc 0%, #818cf8 100%);
+  box-shadow: 0 4rpx 12rpx rgba(240, 171, 252, 0.3);
+}
+
+.filter-label {
+  font-size: 24rpx;
+  color: #4b5563;
+  font-weight: 500;
+}
+
+.filter-item.active .filter-label {
   color: #ffffff;
 }
 
+.filter-count {
+  background: rgba(0, 0, 0, 0.08);
+  padding: 4rpx 10rpx;
+  border-radius: 10rpx;
+  font-size: 20rpx;
+  color: #6b7280;
+}
+
+.filter-item.active .filter-count {
+  background: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+}
+
+/* 列表 */
 .list {
-  height: calc(100vh - 400rpx);
+  flex: 1;
+  padding: 0 32rpx;
 }
 
+/* 空状态 */
+.empty-state {
+  text-align: center;
+  padding: 100rpx 40rpx;
+}
+
+.empty-emoji {
+  display: block;
+  font-size: 100rpx;
+  margin-bottom: 24rpx;
+  opacity: 0.6;
+}
+
+.empty-text {
+  font-size: 28rpx;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* 请求卡片 */
 .request-card {
-  background: #ffffff;
-  border-radius: 16rpx;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10rpx);
+  border-radius: 20rpx;
   padding: 24rpx;
-  margin-bottom: 16rpx;
-  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.06);
+  margin-bottom: 20rpx;
 }
 
-.request-header {
+.request-top {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 12rpx;
+}
+
+.baby-info {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.baby-emoji {
+  font-size: 32rpx;
 }
 
 .baby-name {
@@ -264,15 +354,31 @@ export default {
 }
 
 .status-badge {
-  padding: 6rpx 16rpx;
-  border-radius: 14rpx;
-  font-size: 22rpx;
+  padding: 6rpx 14rpx;
+  border-radius: 12rpx;
+  font-size: 20rpx;
+  font-weight: 500;
 }
 
-.status-badge.pending { background: #ffedd5; color: #c2410c; }
-.status-badge.approved { background: #dcfce7; color: #16a34a; }
-.status-badge.rejected { background: #fee2e2; color: #dc2626; }
-.status-badge.completed { background: #dbeafe; color: #2563eb; }
+.status-badge.pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.status-badge.approved {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.status-badge.rejected {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.status-badge.completed {
+  background: #dbeafe;
+  color: #1e40af;
+}
 
 .request-time {
   display: block;
@@ -283,45 +389,49 @@ export default {
 
 .request-actions {
   display: flex;
-  gap: 16rpx;
+  gap: 12rpx;
 }
 
 .btn-approve, .btn-reject {
   flex: 1;
-  height: 64rpx;
-  border-radius: 12rpx;
+  height: 72rpx;
+  border-radius: 36rpx;
   font-size: 26rpx;
   font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .btn-approve {
-  background: #22c55e;
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
   color: #ffffff;
 }
 
 .btn-reject {
-  background: #ef4444;
-  color: #ffffff;
+  background: rgba(255, 255, 255, 0.8);
+  color: #ef4444;
+  border: 2rpx solid #ef4444;
 }
 
 .request-reason {
-  background: #f9fafb;
+  background: rgba(255, 255, 255, 0.6);
   padding: 16rpx;
-  border-radius: 8rpx;
+  border-radius: 12rpx;
 }
 
 .reason-label {
   font-size: 22rpx;
   color: #6b7280;
-  font-weight: 600;
+  margin-right: 8rpx;
 }
 
 .reason-text {
-  font-size: 22rpx;
+  font-size: 24rpx;
   color: #4b5563;
 }
 
-/* 弹窗样式复用首页的 */
+/* 弹窗 */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -333,26 +443,37 @@ export default {
   align-items: center;
   justify-content: center;
   z-index: 1000;
+  padding: 40rpx;
 }
 
 .modal-content {
   background: #ffffff;
   border-radius: 24rpx;
   padding: 32rpx;
-  width: 600rpx;
+  width: 100%;
+  max-width: 600rpx;
 }
 
 .modal-title {
   display: block;
-  font-size: 32rpx;
+  font-size: 36rpx;
   font-weight: bold;
+  color: #1f2937;
+  text-align: center;
+  margin-bottom: 8rpx;
+}
+
+.modal-subtitle {
+  display: block;
+  font-size: 28rpx;
+  color: #6b7280;
   text-align: center;
   margin-bottom: 24rpx;
 }
 
 .modal-textarea {
   width: 100%;
-  min-height: 160rpx;
+  height: 200rpx;
   border: 2rpx solid #e5e7eb;
   border-radius: 12rpx;
   padding: 16rpx;
@@ -362,28 +483,28 @@ export default {
 
 .modal-actions {
   display: flex;
-  gap: 16rpx;
+  gap: 12rpx;
 }
 
-.btn-cancel, .btn-approve, .btn-reject {
+.btn-cancel, .btn-approve-modal, .btn-reject-modal {
   flex: 1;
-  height: 72rpx;
-  border-radius: 12rpx;
+  height: 80rpx;
+  border-radius: 40rpx;
   font-size: 28rpx;
   font-weight: 600;
 }
 
 .btn-cancel {
-  background: #e5e7eb;
-  color: #374151;
+  background: #f3f4f6;
+  color: #4b5563;
 }
 
-.btn-approve {
-  background: #22c55e;
+.btn-approve-modal {
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
   color: #ffffff;
 }
 
-.btn-reject {
+.btn-reject-modal {
   background: #ef4444;
   color: #ffffff;
 }
