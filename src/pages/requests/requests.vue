@@ -97,6 +97,7 @@ export default {
       activeRequest: null,
       approvalReason: '',
       userInfo: null,
+      pollInterval: null,
     };
   },
   
