@@ -145,20 +145,20 @@ export default {
 /* 头部 */
 .header {
   text-align: center;
-  margin-bottom: 60rpx;
+  margin-bottom: 40rpx;
 }
 
 .title {
-  font-size: 44rpx;
+  font-size: 40rpx;
   font-weight: bold;
   color: #ffffff;
   display: block;
-  margin-bottom: 12rpx;
+  margin-bottom: 8rpx;
   text-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.15);
 }
 
 .subtitle {
-  font-size: 26rpx;
+  font-size: 24rpx;
   color: rgba(255, 255, 255, 0.9);
   display: block;
 }
@@ -175,21 +175,21 @@ export default {
 /* 登录按钮区域 */
 .login-box {
   width: 100%;
-  max-width: 560rpx;
+  max-width: 520rpx;
 }
 
 /* 微信登录按钮 */
 .btn-wechat {
   width: 100%;
-  height: 100rpx;
+  height: 96rpx;
   background: #ffffff;
-  border-radius: 50rpx;
+  border-radius: 48rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 12rpx 40rpx rgba(0, 0, 0, 0.15);
+  box-shadow: 0 10rpx 32rpx rgba(0, 0, 0, 0.15);
   transition: all 0.3s;
-  margin-bottom: 20rpx;
+  margin-bottom: 16rpx;
 }
 
 .btn-wechat:active {
@@ -208,12 +208,12 @@ export default {
 }
 
 .btn-icon {
-  font-size: 44rpx;
-  margin-right: 16rpx;
+  font-size: 40rpx;
+  margin-right: 12rpx;
 }
 
 .btn-text {
-  font-size: 34rpx;
+  font-size: 32rpx;
   font-weight: 600;
   color: #07c160;
 }
@@ -221,41 +221,41 @@ export default {
 .btn-desc {
   display: block;
   text-align: center;
-  font-size: 24rpx;
+  font-size: 22rpx;
   color: rgba(255, 255, 255, 0.85);
-  margin-top: 16rpx;
+  margin-top: 12rpx;
 }
 
 /* 加载状态 */
 .loading {
   text-align: center;
-  padding: 20rpx;
+  padding: 16rpx;
 }
 
 .loading-text {
   display: inline-block;
-  font-size: 26rpx;
+  font-size: 24rpx;
   color: #ffffff;
   background: rgba(255, 255, 255, 0.2);
-  padding: 12rpx 28rpx;
-  border-radius: 24rpx;
+  padding: 10rpx 24rpx;
+  border-radius: 20rpx;
   backdrop-filter: blur(10rpx);
 }
 
 /* 错误提示 */
 .error-box {
   background: rgba(255, 255, 255, 0.95);
-  border-radius: 16rpx;
-  padding: 20rpx 32rpx;
-  margin-top: 24rpx;
+  border-radius: 14rpx;
+  padding: 16rpx 28rpx;
+  margin-top: 16rpx;
   width: 100%;
-  max-width: 560rpx;
+  max-width: 520rpx;
 }
 
 .error-text {
   display: block;
   text-align: center;
-  font-size: 26rpx;
+  font-size: 24rpx;
   color: #ef4444;
 }
 
@@ -263,8 +263,8 @@ export default {
 .footer {
   background: rgba(255, 255, 255, 0.15);
   backdrop-filter: blur(20rpx);
-  border-radius: 32rpx;
-  padding: 32rpx;
+  border-radius: 24rpx;
+  padding: 24rpx 28rpx;
   margin-top: auto;
 }
 
@@ -278,20 +278,20 @@ export default {
   width: 48%;
   display: flex;
   align-items: center;
-  margin-bottom: 20rpx;
+  margin-bottom: 14rpx;
   background: rgba(255, 255, 255, 0.2);
-  border-radius: 16rpx;
-  padding: 16rpx;
+  border-radius: 14rpx;
+  padding: 14rpx;
 }
 
 .feature-icon {
-  font-size: 32rpx;
-  margin-right: 12rpx;
+  font-size: 28rpx;
+  margin-right: 10rpx;
   flex-shrink: 0;
 }
 
 .feature-text {
-  font-size: 24rpx;
+  font-size: 22rpx;
   color: #ffffff;
   flex: 1;
 }
