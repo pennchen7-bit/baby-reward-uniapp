@@ -8,23 +8,26 @@
     
     <!-- 用户信息卡片 -->
     <view v-if="userInfo" class="user-card">
-      <text class="user-tag">
-        👤 {{ userInfo.username }}
+      <view class="user-info-left">
+        <view class="user-tag">
+          <text class="user-icon">👤</text>
+          <text class="user-name">{{ userInfo.username }}</text>
+        </view>
         <text v-if="userInfo.role === 'baby'" class="role-badge baby">宝宝</text>
         <text v-else-if="userInfo.role === 'parent'" class="role-badge parent">家长</text>
         <text v-else-if="userInfo.role === 'admin'" class="role-badge admin">管理员</text>
-      </text>
-      <text v-if="userInfo.familyCode" class="family-code">
-        🔑 {{ userInfo.familyCode }}
-      </text>
-    </view>
-    
-    <!-- 邀请按钮（管理员/家长） -->
-    <view v-if="isAdminOrParent" class="invite-section">
-      <button class="btn-invite" @click="goToInvite">
-        <text class="invite-icon">📧</text>
-        <text class="invite-text">邀请家人</text>
-      </button>
+      </view>
+      
+      <view class="user-info-right">
+        <view class="family-code-box">
+          <text class="family-code-label">家庭码</text>
+          <text class="family-code-value">{{ userInfo.familyCode }}</text>
+        </view>
+        <button v-if="isAdminOrParent" class="btn-invite" @click="goToInvite">
+          <text class="invite-icon">📧</text>
+          <text class="invite-text">邀请</text>
+        </button>
+      </view>
     </view>
 
     <!-- 家长审批区域 -->
@@ -497,84 +500,115 @@ export default {
 
 /* 用户信息卡片 */
 .user-card {
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10rpx);
-  border-radius: 20rpx;
-  padding: 20rpx 28rpx;
-  margin-bottom: 20rpx;
+  border-radius: 24rpx;
+  padding: 24rpx 28rpx;
+  margin-bottom: 24rpx;
   display: flex;
-  justify-content: center;
-  gap: 12rpx;
-  flex-wrap: wrap;
+  justify-content: space-between;
   align-items: center;
+  gap: 20rpx;
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.1);
+}
+
+.user-info-left {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  flex: 1;
+  min-width: 0;
 }
 
 .user-tag {
-  background: rgba(255, 255, 255, 0.6);
-  color: #4b5563;
-  padding: 8rpx 16rpx;
-  border-radius: 16rpx;
-  font-size: 24rpx;
   display: flex;
   align-items: center;
-  gap: 6rpx;
+  gap: 8rpx;
+  background: rgba(240, 171, 252, 0.15);
+  padding: 10rpx 16rpx;
+  border-radius: 16rpx;
 }
 
-.family-code {
-  background: linear-gradient(135deg, #f0abfc 0%, #818cf8 100%);
-  color: #ffffff;
-  padding: 8rpx 16rpx;
-  border-radius: 16rpx;
-  font-size: 24rpx;
+.user-icon {
+  font-size: 28rpx;
+  line-height: 1;
+}
+
+.user-name {
+  font-size: 26rpx;
+  color: #4b5563;
   font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .role-badge {
-  padding: 2rpx 8rpx;
-  border-radius: 10rpx;
-  font-size: 18rpx;
-  margin-left: 4rpx;
+  padding: 6rpx 14rpx;
+  border-radius: 12rpx;
+  font-size: 22rpx;
+  font-weight: 500;
+  flex-shrink: 0;
 }
 
 .role-badge.baby { background: #fce7f3; color: #ec4899; }
 .role-badge.parent { background: #dcfce7; color: #22c55e; }
 .role-badge.admin { background: #ede9fe; color: #9333ea; }
 
-/* 邀请按钮区域 */
-.invite-section {
+.user-info-right {
   display: flex;
-  justify-content: center;
-  margin-bottom: 24rpx;
-  padding: 0 40rpx;
+  align-items: center;
+  gap: 16rpx;
+  flex-shrink: 0;
+}
+
+.family-code-box {
+  background: linear-gradient(135deg, #f0abfc 0%, #818cf8 100%);
+  padding: 12rpx 20rpx;
+  border-radius: 16rpx;
+  text-align: center;
+}
+
+.family-code-label {
+  display: block;
+  font-size: 18rpx;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 2rpx;
+}
+
+.family-code-value {
+  display: block;
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #ffffff;
+  letter-spacing: 2rpx;
 }
 
 .btn-invite {
-  background: #ffffff;
-  color: #07c160;
-  padding: 16rpx 36rpx;
-  border-radius: 44rpx;
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  color: #ffffff;
+  padding: 14rpx 24rpx;
+  border-radius: 14rpx;
   display: flex;
-  flex-direction: row;
   align-items: center;
-  justify-content: center;
-  gap: 12rpx;
-  font-size: 28rpx;
+  gap: 8rpx;
+  font-size: 24rpx;
   font-weight: 600;
-  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.1);
   border: none;
+  box-shadow: 0 4rpx 16rpx rgba(34, 197, 94, 0.3);
 }
 
 .btn-invite:active {
-  transform: scale(0.97);
+  transform: scale(0.95);
 }
 
 .invite-icon {
-  font-size: 32rpx;
+  font-size: 28rpx;
   line-height: 1;
 }
 
 .invite-text {
-  font-size: 28rpx;
+  font-size: 24rpx;
   line-height: 1;
 }
 
