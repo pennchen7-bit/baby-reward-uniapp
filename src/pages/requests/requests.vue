@@ -5,6 +5,9 @@
       <text class="title">🔔 审批请求</text>
       <text class="subtitle">{{ pendingCount }} 个待批准</text>
     </view>
+
+    <!-- 筛选 -->
+    <view class="filter-section">
       <view class="filter-list">
         <view 
           v-for="item in filters" 
