@@ -2,6 +2,11 @@
   <view class="container">
     <!-- 头部 -->
     <view class="header">
+      <!-- 返回按钮 -->
+      <view class="back-btn" @click="goBack">
+        <text class="back-icon">‹</text>
+      </view>
+      
       <text class="title">🔔 审批请求</text>
       <text class="subtitle">{{ pendingCount }} 个待批准</text>
     </view>
@@ -32,26 +37,21 @@
 
       <!-- 请求卡片 -->
       <view v-for="req in filteredRequests" :key="req.id" class="request-card">
-        <view class="request-top">
-          <view class="baby-info">
-            <text class="baby-emoji">👶</text>
-            <text class="baby-name">{{ req.babyName }}</text>
+        <view class="request-left">
+          <view class="request-icon">{{ req.status === 'approved' ? '✅' : req.status === 'rejected' ? '❌' : '🔔' }}</view>
+          <view class="request-info">
+            <text class="request-name">{{ req.babyName }} 申请抽奖</text>
+            <text class="request-time">{{ formatTime(req.createdAt) }}</text>
           </view>
-          <text class="status-badge" :class="req.status">
-            {{ statusText(req.status) }}
-          </text>
         </view>
-        
-        <text class="request-time">{{ formatTime(req.createdAt) }}</text>
         
         <view v-if="req.status === 'pending'" class="request-actions">
           <button class="btn-approve" @click="handleApprove(req, true)">批准</button>
           <button class="btn-reject" @click="handleApprove(req, false)">拒绝</button>
         </view>
         
-        <view v-else class="request-reason">
-          <text class="reason-label">原因：</text>
-          <text class="reason-text">{{ req.reason || '-' }}</text>
+        <view v-else class="request-status">
+          <text class="status-text">{{ req.reason || '已处理' }}</text>
         </view>
       </view>
     </scroll-view>
@@ -231,9 +231,34 @@ export default {
 
 /* 头部 */
 .header {
+  position: relative;
   text-align: center;
-  padding: 0 40rpx;
+  padding: 20rpx 40rpx;
   margin-bottom: 24rpx;
+}
+
+.back-btn {
+  position: absolute;
+  left: 32rpx;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 60rpx;
+  height: 60rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.back-icon {
+  font-size: 64rpx;
+  color: #ffffff;
+  font-weight: 300;
+  line-height: 1;
+}
+
+.back-btn:active {
+  opacity: 0.7;
 }
 
 .title {
@@ -337,68 +362,51 @@ export default {
   border-radius: 20rpx;
   padding: 24rpx;
   margin-bottom: 20rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
 }
 
-.request-top {
+.request-left {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 12rpx;
+  gap: 16rpx;
 }
 
-.baby-info {
+.request-icon {
+  width: 80rpx;
+  height: 80rpx;
+  background: linear-gradient(135deg, #f3e8ff 0%, #fce7f3 100%);
+  border-radius: 12rpx;
   display: flex;
   align-items: center;
+  justify-content: center;
+  font-size: 40rpx;
+  flex-shrink: 0;
+}
+
+.request-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
   gap: 8rpx;
 }
 
-.baby-emoji {
-  font-size: 32rpx;
-}
-
-.baby-name {
+.request-name {
   font-size: 28rpx;
   font-weight: 600;
   color: #1f2937;
 }
 
-.status-badge {
-  padding: 6rpx 14rpx;
-  border-radius: 12rpx;
-  font-size: 20rpx;
-  font-weight: 500;
-}
-
-.status-badge.pending {
-  background: #fef3c7;
-  color: #92400e;
-}
-
-.status-badge.approved {
-  background: #dcfce7;
-  color: #166534;
-}
-
-.status-badge.rejected {
-  background: #fee2e2;
-  color: #991b1b;
-}
-
-.status-badge.completed {
-  background: #dbeafe;
-  color: #1e40af;
-}
-
 .request-time {
-  display: block;
   font-size: 22rpx;
   color: #9ca3af;
-  margin-bottom: 16rpx;
 }
 
 .request-actions {
   display: flex;
   gap: 12rpx;
+  margin-top: 8rpx;
 }
 
 .btn-approve, .btn-reject {
@@ -423,21 +431,15 @@ export default {
   border: 2rpx solid #ef4444;
 }
 
-.request-reason {
+.request-status {
   background: rgba(255, 255, 255, 0.6);
   padding: 16rpx;
   border-radius: 12rpx;
 }
 
-.reason-label {
-  font-size: 22rpx;
-  color: #6b7280;
-  margin-right: 8rpx;
-}
-
-.reason-text {
+.status-text {
   font-size: 24rpx;
-  color: #4b5563;
+  color: #6b7280;
 }
 
 /* 弹窗 */
