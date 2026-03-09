@@ -19,7 +19,10 @@
     <!-- 历史记录列表 -->
     <scroll-view class="list" scroll-y>
       <view v-if="loading" class="loading">加载中...</view>
-      <view v-else-if="records.length === 0" class="empty">暂无历史记录</view>
+      <view v-else-if="records.length === 0" class="empty">
+        <text class="empty-emoji">📭</text>
+        <text class="empty-text">暂无历史记录</text>
+      </view>
       <view v-else v-for="record in records" :key="record.id" class="record-card">
         <view class="record-icon">{{ record.imageUrl || '🎁' }}</view>
         <view class="record-info">
@@ -181,11 +184,33 @@ export default {
   height: calc(100vh - 400rpx);
 }
 
-.loading, .empty {
+.loading {
   text-align: center;
   padding: 80rpx 20rpx;
-  color: #9ca3af;
+  color: rgba(255, 255, 255, 0.8);
   font-size: 28rpx;
+}
+
+.empty {
+  text-align: center;
+  padding: 120rpx 20rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.empty-emoji {
+  display: block;
+  font-size: 100rpx;
+  margin-bottom: 24rpx;
+  opacity: 0.6;
+}
+
+.empty-text {
+  display: block;
+  font-size: 28rpx;
+  color: rgba(255, 255, 255, 0.8);
 }
 
 .record-card {
