@@ -8,8 +8,8 @@ import { API_BASE_URL } from './config';
  */
 export function request(options) {
   return new Promise((resolve, reject) => {
-    // 从本地存储获取 token（如果有）
-    const token = uni.getStorageSync('token') || '';
+    // 从本地存储获取用户信息
+    const userInfo = uni.getStorageSync('user_info') || null;
 
     uni.request({
       url: API_BASE_URL + options.url,
@@ -17,7 +17,12 @@ export function request(options) {
       data: options.data || {},
       header: {
         'Content-Type': 'application/json',
-        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+        // 传递用户信息到后端
+        ...(userInfo ? { 
+          'X-User-Id': userInfo.id,
+          'X-User-Role': userInfo.role,
+          'X-Family-Id': userInfo.familyId || ''
+        } : {}),
         ...options.header,
       },
       timeout: options.timeout || 10000,
@@ -26,8 +31,8 @@ export function request(options) {
           resolve(res.data);
         } else if (res.statusCode === 401) {
           // 未授权，清除登录状态
-          uni.removeStorageSync('token');
           uni.removeStorageSync('user_info');
+          uni.removeStorageSync('family_id');
           uni.navigateTo({ url: '/pages/login/login' });
           reject(new Error('未授权'));
         } else {
