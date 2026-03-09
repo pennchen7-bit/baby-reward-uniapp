@@ -2,14 +2,7 @@
   <view class="container">
     <!-- 头部 -->
     <view class="header">
-      <view class="header-top">
-        <text class="title">🎁 宝宝奖励计划</text>
-        <!-- 邀请按钮（管理员/家长） -->
-        <button v-if="isAdminOrParent" class="btn-invite" @click="goToInvite">
-          <text class="invite-icon">📧</text>
-          <text class="invite-text">邀请家人</text>
-        </button>
-      </view>
+      <text class="title">🎁 宝宝奖励计划</text>
       <text class="subtitle">{{ subtitleText }}</text>
       
       <!-- 用户信息 -->
@@ -23,6 +16,11 @@
         <text v-if="userInfo.familyCode" class="family-code">
           🔑 {{ userInfo.familyCode }}
         </text>
+        <!-- 邀请按钮（管理员/家长） -->
+        <button v-if="isAdminOrParent" class="btn-invite" @click="goToInvite">
+          <text class="invite-icon">📧</text>
+          <text class="invite-text">邀请家人</text>
+        </button>
         <button class="btn-logout" @click="handleLogout">退出</button>
       </view>
     </view>
@@ -496,13 +494,6 @@ export default {
   margin-bottom: 32rpx;
 }
 
-.header-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 12rpx;
-}
-
 .title {
   font-size: 40rpx;
   font-weight: bold;
@@ -511,12 +502,45 @@ export default {
   text-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.15);
 }
 
+.subtitle {
+  font-size: 24rpx;
+  color: rgba(255, 255, 255, 0.9);
+  display: block;
+}
+
+.user-info {
+  margin-top: 24rpx;
+  display: flex;
+  justify-content: center;
+  gap: 12rpx;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.user-tag {
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  padding: 8rpx 16rpx;
+  border-radius: 16rpx;
+  font-size: 24rpx;
+  backdrop-filter: blur(10rpx);
+}
+
+.family-code {
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  padding: 8rpx 16rpx;
+  border-radius: 16rpx;
+  font-size: 24rpx;
+  backdrop-filter: blur(10rpx);
+}
+
 /* 邀请按钮 - 简洁样式 */
 .btn-invite {
   background: rgba(255, 255, 255, 0.25);
   color: #ffffff;
-  padding: 10rpx 20rpx;
-  border-radius: 20rpx;
+  padding: 8rpx 18rpx;
+  border-radius: 18rpx;
   display: flex;
   align-items: center;
   gap: 6rpx;
@@ -531,42 +555,18 @@ export default {
 }
 
 .invite-icon {
-  font-size: 24rpx;
+  font-size: 22rpx;
 }
 
 .invite-text {
   font-size: 22rpx;
 }
 
-.subtitle {
-  font-size: 24rpx;
-  color: rgba(255, 255, 255, 0.9);
-  display: block;
-}
-
-.user-info {
-  margin-top: 20rpx;
-  display: flex;
-  justify-content: center;
-  gap: 16rpx;
-  flex-wrap: wrap;
-  align-items: center;
-}
-
-.user-tag {
-  background: rgba(255, 255, 255, 0.2);
-  color: #ffffff;
-  padding: 8rpx 16rpx;
-  border-radius: 16rpx;
-  font-size: 24rpx;
-  backdrop-filter: blur(10rpx);
-}
-
 /* 退出按钮 */
 .btn-logout {
   background: rgba(255, 255, 255, 0.2);
   color: #ffffff;
-  padding: 8rpx 20rpx;
+  padding: 8rpx 18rpx;
   border-radius: 16rpx;
   font-size: 22rpx;
   backdrop-filter: blur(10rpx);

@@ -1,15 +1,21 @@
 <template>
   <view class="container">
+    <!-- 头部 -->
     <view class="header">
       <text class="title">📧 邀请家人</text>
       <text class="subtitle">邀请家人加入你的家庭</text>
     </view>
 
-    <!-- 家庭信息 -->
-    <view class="family-info">
-      <text class="family-label">当前家庭</text>
-      <text class="family-name">{{ familyName }}</text>
-      <text class="family-code">家庭码：{{ familyCode }}</text>
+    <!-- 家庭信息卡片 -->
+    <view class="family-card">
+      <view class="family-info">
+        <text class="family-label">当前家庭</text>
+        <text class="family-name">{{ familyName }}</text>
+        <view class="family-code-box">
+          <text class="family-code-label">家庭码</text>
+          <text class="family-code-value">{{ familyCode }}</text>
+        </view>
+      </view>
     </view>
 
     <!-- 选择角色 -->
@@ -48,22 +54,20 @@
       {{ generating ? '生成中...' : '生成邀请链接' }}
     </button>
 
-    <!-- 邀请链接 -->
+    <!-- 邀请结果 -->
     <view v-if="inviteLink" class="invite-result">
       <text class="result-title">✅ 邀请链接已生成</text>
       
-      <view class="share-section">
-        <button class="btn-share" @click="handleShare">
-          <text class="share-icon">📤</text>
-          <text class="share-text">分享给微信好友</text>
-        </button>
-        
-        <view class="copy-section">
-          <text class="copy-label">或复制链接</text>
-          <view class="copy-box">
-            <text class="copy-text">{{ inviteLink }}</text>
-            <button class="btn-copy" @click="handleCopy">复制</button>
-          </view>
+      <button class="btn-share" @click="handleShare">
+        <text class="share-icon">📤</text>
+        <text class="share-text">分享给微信好友</text>
+      </button>
+      
+      <view class="copy-section">
+        <text class="copy-label">或复制链接</text>
+        <view class="copy-box">
+          <text class="copy-text">{{ inviteLink }}</text>
+          <button class="btn-copy" @click="handleCopy">复制</button>
         </view>
       </view>
       
@@ -85,14 +89,13 @@ export default {
     return {
       familyName: '',
       familyCode: '',
-      role: 'parent', // 'parent' | 'baby'
+      role: 'parent',
       generating: false,
       inviteLink: '',
     };
   },
   
   onLoad() {
-    // 获取用户信息
     const user = uni.getStorageSync('user_info');
     if (user) {
       this.familyName = user.familyName || '';
@@ -106,8 +109,6 @@ export default {
       
       try {
         const res = await invite.generate({ role: this.role });
-        
-        // 保存邀请链接
         this.inviteLink = res.inviteLink;
         
         uni.showToast({
@@ -125,17 +126,8 @@ export default {
       }
     },
     
-    // 分享给微信好友
     handleShare() {
-      // 小程序分享
-      uni.showShareMenu({
-        withShareTicket: true,
-        menus: ['shareAppMessage', 'shareTimeline'],
-      });
-      
-      // 或者使用小程序 URL Scheme
       if (this.inviteLink) {
-        // 复制到剪贴板
         uni.setClipboardData({
           data: this.inviteLink,
           success: () => {
@@ -149,7 +141,6 @@ export default {
       }
     },
     
-    // 复制链接
     handleCopy() {
       if (this.inviteLink) {
         uni.setClipboardData({
@@ -174,6 +165,7 @@ export default {
   padding: calc(100rpx + env(safe-area-inset-top)) 40rpx calc(40rpx + env(safe-area-inset-bottom));
 }
 
+/* 头部 */
 .header {
   text-align: center;
   margin-bottom: 40rpx;
@@ -194,13 +186,16 @@ export default {
   display: block;
 }
 
-/* 家庭信息 */
-.family-info {
+/* 家庭信息卡片 */
+.family-card {
   background: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(10rpx);
   border-radius: 24rpx;
   padding: 32rpx;
   margin-bottom: 32rpx;
+}
+
+.family-info {
   text-align: center;
 }
 
@@ -216,19 +211,35 @@ export default {
   font-size: 36rpx;
   font-weight: bold;
   color: #1f2937;
-  margin-bottom: 12rpx;
+  margin-bottom: 16rpx;
 }
 
-.family-code {
+.family-code-box {
+  display: inline-block;
+  background: linear-gradient(135deg, #f0abfc 0%, #818cf8 100%);
+  padding: 12rpx 28rpx;
+  border-radius: 24rpx;
+}
+
+.family-code-label {
   display: block;
-  font-size: 28rpx;
-  color: #9333ea;
-  font-weight: 500;
+  font-size: 20rpx;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 4rpx;
+}
+
+.family-code-value {
+  display: block;
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #ffffff;
+  letter-spacing: 4rpx;
 }
 
 /* 角色选择 */
 .role-section {
-  background: #ffffff;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10rpx);
   border-radius: 24rpx;
   padding: 32rpx;
   margin-bottom: 32rpx;
@@ -240,17 +251,18 @@ export default {
   font-weight: 600;
   color: #1f2937;
   margin-bottom: 24rpx;
+  text-align: center;
 }
 
 .role-options {
   display: flex;
-  gap: 24rpx;
+  gap: 20rpx;
 }
 
 .role-option {
   flex: 1;
-  background: #f9fafb;
-  border: 2rpx solid #e5e7eb;
+  background: rgba(255, 255, 255, 0.6);
+  border: 2rpx solid rgba(255, 255, 255, 0.5);
   border-radius: 20rpx;
   padding: 24rpx;
   text-align: center;
@@ -258,27 +270,28 @@ export default {
 }
 
 .role-option.active {
-  background: #fef3c7;
-  border-color: #f59e0b;
+  background: rgba(255, 255, 255, 0.95);
+  border-color: #f0abfc;
+  box-shadow: 0 4rpx 16rpx rgba(240, 171, 252, 0.3);
 }
 
 .role-icon {
   display: block;
-  font-size: 64rpx;
+  font-size: 56rpx;
   margin-bottom: 12rpx;
 }
 
 .role-name {
   display: block;
-  font-size: 32rpx;
+  font-size: 30rpx;
   font-weight: 600;
   color: #1f2937;
-  margin-bottom: 8rpx;
+  margin-bottom: 6rpx;
 }
 
 .role-desc {
   display: block;
-  font-size: 22rpx;
+  font-size: 20rpx;
   color: #6b7280;
 }
 
@@ -309,15 +322,11 @@ export default {
 
 .result-title {
   display: block;
-  font-size: 32rpx;
+  font-size: 30rpx;
   font-weight: bold;
   color: #059669;
   margin-bottom: 24rpx;
   text-align: center;
-}
-
-.share-section {
-  margin-bottom: 24rpx;
 }
 
 .btn-share {
@@ -332,14 +341,19 @@ export default {
   gap: 12rpx;
   font-size: 32rpx;
   font-weight: 600;
+  margin-bottom: 24rpx;
 }
 
 .share-icon {
   font-size: 36rpx;
 }
 
+.share-text {
+  display: block;
+}
+
 .copy-section {
-  margin-top: 24rpx;
+  margin-bottom: 24rpx;
 }
 
 .copy-label {
@@ -357,34 +371,35 @@ export default {
 
 .copy-text {
   flex: 1;
-  font-size: 24rpx;
+  font-size: 22rpx;
   color: #6b7280;
-  background: #f9fafb;
-  padding: 16rpx;
+  background: rgba(255, 255, 255, 0.6);
+  padding: 14rpx 18rpx;
   border-radius: 12rpx;
   word-break: break-all;
 }
 
 .btn-copy {
-  padding: 0 32rpx;
+  padding: 0 28rpx;
   height: 64rpx;
-  background: #f3f4f6;
+  background: rgba(255, 255, 255, 0.8);
   color: #374151;
   border-radius: 12rpx;
   font-size: 26rpx;
   font-weight: 500;
+  flex-shrink: 0;
 }
 
 /* 提示 */
 .tips {
-  background: #f9fafb;
+  background: rgba(255, 255, 255, 0.5);
   border-radius: 16rpx;
-  padding: 24rpx;
+  padding: 20rpx;
 }
 
 .tips-title {
   display: block;
-  font-size: 26rpx;
+  font-size: 24rpx;
   font-weight: 600;
   color: #4b5563;
   margin-bottom: 12rpx;
@@ -392,7 +407,7 @@ export default {
 
 .tips-text {
   display: block;
-  font-size: 22rpx;
+  font-size: 20rpx;
   color: #6b7280;
   line-height: 1.8;
 }
