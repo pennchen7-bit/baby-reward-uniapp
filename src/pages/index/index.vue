@@ -483,8 +483,9 @@ export default {
 
 .container {
   min-height: 100vh;
-  background: linear-gradient(135deg, #fce7f3 0%, #f3e8ff 50%, #dbeafe 100%);
-  padding-top: calc(80rpx + env(safe-area-inset-top));
+  background: linear-gradient(180deg, #f0abfc 0%, #818cf8 50%, #60a5fa 100%);
+  /* 关键：顶部留出足够空间，避免被导航栏遮挡 */
+  padding-top: calc(100rpx + env(safe-area-inset-top));
   padding-left: 32rpx;
   padding-right: 32rpx;
   padding-bottom: calc(200rpx + env(safe-area-inset-bottom));
@@ -503,10 +504,11 @@ export default {
 }
 
 .title {
-  font-size: 44rpx;
+  font-size: 40rpx;
   font-weight: bold;
-  color: #9333ea;
+  color: #ffffff;
   display: block;
+  text-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.15);
 }
 
 /* 邀请按钮 */
@@ -535,8 +537,8 @@ export default {
 }
 
 .subtitle {
-  font-size: 26rpx;
-  color: #6b7280;
+  font-size: 24rpx;
+  color: rgba(255, 255, 255, 0.9);
   display: block;
 }
 
@@ -549,26 +551,37 @@ export default {
   align-items: center;
 }
 
+.user-tag {
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  padding: 8rpx 16rpx;
+  border-radius: 16rpx;
+  font-size: 24rpx;
+  backdrop-filter: blur(10rpx);
+}
+
 /* 退出按钮 */
 .btn-logout {
-  background: #f3f4f6;
-  color: #6b7280;
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
   padding: 8rpx 20rpx;
   border-radius: 16rpx;
   font-size: 22rpx;
+  backdrop-filter: blur(10rpx);
 }
 
 .btn-logout:active {
-  background: #e5e7eb;
+  background: rgba(255, 255, 255, 0.3);
 }
 
 .user-tag, .family-code {
-  background: #ffffff;
+  background: rgba(255, 255, 255, 0.2);
   padding: 10rpx 20rpx;
   border-radius: 28rpx;
   font-size: 24rpx;
-  color: #4b5563;
+  color: #ffffff;
   box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
+  backdrop-filter: blur(10rpx);
 }
 
 .role-badge {
@@ -579,16 +592,17 @@ export default {
 }
 
 .role-badge.baby { background: #fce7f3; color: #ec4899; }
-.role-badge.parent { background: #dcfce7; color: #22c55e; }
-.role-badge.admin { background: #ede9fe; color: #9333ea; }
+.role-badge.parent { background: rgba(220, 252, 231, 0.8); color: #22c55e; }
+.role-badge.admin { background: rgba(237, 233, 254, 0.8); color: #9333ea; }
 
 /* 审批区域 */
 .approval-section {
-  background: #ffffff;
+  background: rgba(255, 255, 255, 0.9);
   border-radius: 24rpx;
   padding: 24rpx;
   margin-bottom: 24rpx;
   box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.08);
+  backdrop-filter: blur(10rpx);
 }
 
 .approval-section.empty {
@@ -671,12 +685,13 @@ export default {
 
 /* 抽奖区域 */
 .draw-section {
-  background: #ffffff;
+  background: rgba(255, 255, 255, 0.9);
   border-radius: 24rpx;
   padding: 40rpx 24rpx;
   margin-bottom: 24rpx;
   box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.08);
   text-align: center;
+  backdrop-filter: blur(10rpx);
 }
 
 .result-card, .draw-card, .pending-card {
@@ -693,7 +708,7 @@ export default {
 .result-title, .draw-title, .pending-title {
   font-size: 36rpx;
   font-weight: bold;
-  color: #1f2937;
+  color: #4b5563;
   margin-bottom: 12rpx;
 }
 
@@ -762,11 +777,12 @@ export default {
 
 /* 历史记录区域 */
 .history-section {
-  background: #ffffff;
+  background: rgba(255, 255, 255, 0.9);
   border-radius: 24rpx;
   padding: 24rpx;
   margin-bottom: 24rpx;
   box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.08);
+  backdrop-filter: blur(10rpx);
 }
 
 .section-count {

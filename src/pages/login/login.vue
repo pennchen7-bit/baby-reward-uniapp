@@ -34,28 +34,6 @@
         <text class="error-text">{{ error }}</text>
       </view>
     </view>
-
-    <!-- 底部功能说明 -->
-    <view class="footer">
-      <view class="feature-list">
-        <view class="feature-item">
-          <text class="feature-icon">✨</text>
-          <text class="feature-text">微信授权，无需注册</text>
-        </view>
-        <view class="feature-item">
-          <text class="feature-icon">🏠</text>
-          <text class="feature-text">自动创建家庭</text>
-        </view>
-        <view class="feature-item">
-          <text class="feature-icon">👨‍👩‍👧‍👦</text>
-          <text class="feature-text">邀请家人加入</text>
-        </view>
-        <view class="feature-item">
-          <text class="feature-icon">🎰</text>
-          <text class="feature-text">抽奖激励成长</text>
-        </view>
-      </view>
-    </view>
   </view>
 </template>
 
@@ -134,7 +112,8 @@ export default {
 .container {
   min-height: 100vh;
   background: linear-gradient(180deg, #f0abfc 0%, #818cf8 50%, #60a5fa 100%);
-  padding-top: calc(40rpx + env(safe-area-inset-top));
+  /* 关键：顶部留出足够空间，避免被导航栏遮挡 */
+  padding-top: calc(100rpx + env(safe-area-inset-top));
   padding-left: 40rpx;
   padding-right: 40rpx;
   padding-bottom: calc(40rpx + env(safe-area-inset-bottom));
@@ -145,7 +124,7 @@ export default {
 /* 头部 */
 .header {
   text-align: center;
-  margin-bottom: 40rpx;
+  margin-bottom: 80rpx;
 }
 
 .title {
@@ -153,7 +132,7 @@ export default {
   font-weight: bold;
   color: #ffffff;
   display: block;
-  margin-bottom: 8rpx;
+  margin-bottom: 12rpx;
   text-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.15);
 }
 
@@ -169,13 +148,13 @@ export default {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  align-items: center;
 }
 
 /* 登录按钮区域 */
 .login-box {
   width: 100%;
   max-width: 520rpx;
+  margin: 0 auto;
 }
 
 /* 微信登录按钮 */
@@ -250,6 +229,8 @@ export default {
   margin-top: 16rpx;
   width: 100%;
   max-width: 520rpx;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .error-text {
@@ -257,42 +238,5 @@ export default {
   text-align: center;
   font-size: 24rpx;
   color: #ef4444;
-}
-
-/* 底部功能说明 */
-.footer {
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(20rpx);
-  border-radius: 24rpx;
-  padding: 24rpx 28rpx;
-  margin-top: auto;
-}
-
-.feature-list {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-}
-
-.feature-item {
-  width: 48%;
-  display: flex;
-  align-items: center;
-  margin-bottom: 14rpx;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 14rpx;
-  padding: 14rpx;
-}
-
-.feature-icon {
-  font-size: 28rpx;
-  margin-right: 10rpx;
-  flex-shrink: 0;
-}
-
-.feature-text {
-  font-size: 22rpx;
-  color: #ffffff;
-  flex: 1;
 }
 </style>
