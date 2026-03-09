@@ -16,13 +16,13 @@
         <text v-if="userInfo.familyCode" class="family-code">
           🔑 {{ userInfo.familyCode }}
         </text>
-        <!-- 邀请按钮（管理员/家长） -->
-        <button v-if="isAdminOrParent" class="btn-invite" @click="goToInvite">
-          <text class="invite-icon">📧</text>
-          <text class="invite-text">邀请家人</text>
-        </button>
-        <button class="btn-logout" @click="handleLogout">退出</button>
       </view>
+      
+      <!-- 邀请按钮（管理员/家长显示在底部） -->
+      <button v-if="isAdminOrParent" class="btn-invite-bottom" @click="goToInvite">
+        <text class="invite-icon">📧</text>
+        <text class="invite-text">邀请家人</text>
+      </button>
     </view>
 
     <!-- 家长审批区域 -->
@@ -535,45 +535,32 @@ export default {
   backdrop-filter: blur(10rpx);
 }
 
-/* 邀请按钮 - 简洁样式 */
-.btn-invite {
-  background: rgba(255, 255, 255, 0.25);
-  color: #ffffff;
-  padding: 8rpx 18rpx;
-  border-radius: 18rpx;
-  display: flex;
+/* 邀请按钮 - 底部独立显示 */
+.btn-invite-bottom {
+  margin-top: 24rpx;
+  background: rgba(255, 255, 255, 0.95);
+  color: #07c160;
+  padding: 16rpx 32rpx;
+  border-radius: 44rpx;
+  display: inline-flex;
   align-items: center;
-  gap: 6rpx;
-  font-size: 22rpx;
-  font-weight: 500;
-  backdrop-filter: blur(10rpx);
-  border: 1rpx solid rgba(255, 255, 255, 0.3);
+  gap: 10rpx;
+  font-size: 28rpx;
+  font-weight: 600;
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.1);
 }
 
-.btn-invite:active {
-  background: rgba(255, 255, 255, 0.35);
+.btn-invite-bottom:active {
+  transform: scale(0.97);
+  background: rgba(255, 255, 255, 1);
 }
 
 .invite-icon {
-  font-size: 22rpx;
+  font-size: 32rpx;
 }
 
 .invite-text {
-  font-size: 22rpx;
-}
-
-/* 退出按钮 */
-.btn-logout {
-  background: rgba(255, 255, 255, 0.2);
-  color: #ffffff;
-  padding: 8rpx 18rpx;
-  border-radius: 16rpx;
-  font-size: 22rpx;
-  backdrop-filter: blur(10rpx);
-}
-
-.btn-logout:active {
-  background: rgba(255, 255, 255, 0.3);
+  font-size: 28rpx;
 }
 
 .user-tag, .family-code {
