@@ -2,12 +2,11 @@
  * 应用配置
  */
 
-// 后端 API 地址
-// 生产环境部署到阿里云
+// 后端 API 地址 - 生产环境
 export const API_BASE_URL = 'https://www.clovey.fun/api';
 
-// 替换成你的后端地址（部署后）
-// export const API_BASE_URL = 'https://your-app.vercel.app/api';
+// 开发环境（本地测试时用）
+// export const API_BASE_URL = 'http://localhost:3000/api';
 
 // 小程序配置
 export const MP_CONFIG = {
