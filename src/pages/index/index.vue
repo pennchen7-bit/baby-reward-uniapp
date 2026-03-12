@@ -137,6 +137,14 @@
         <text class="icon">🔔</text>
         <text class="label">审批</text>
       </view>
+      <view v-if="isAdminOrParent" class="tabbar-item" @click="goTo('/pages/prizes/prizes')">
+        <text class="icon">🎁</text>
+        <text class="label">奖品</text>
+      </view>
+      <view v-if="isAdminOrParent" class="tabbar-item" @click="goTo('/pages/members/members')">
+        <text class="icon">👨‍👩‍👧‍👦</text>
+        <text class="label">成员</text>
+      </view>
       <view class="tabbar-item" @click="handleLogout">
         <text class="icon">🚪</text>
         <text class="label">退出</text>

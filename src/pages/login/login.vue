@@ -24,7 +24,8 @@
         <text class="btn-desc">
           <text v-if="!canLogin">正在初始化...</text>
           <text v-else-if="logging">请稍候，正在登录...</text>
-          <text v-else>首次登录自动创建家庭 · 邀请家人共同成长</text>
+          <text v-else-if="inviteCode">通过邀请加入家庭</text>
+          <text v-else>首次登录自动创建家庭 · 成为管理员</text>
         </text>
       </view>
 

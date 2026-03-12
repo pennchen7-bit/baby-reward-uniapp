@@ -34,6 +34,20 @@
         "navigationBarTitleText": "邀请家人",
         "navigationStyle": "custom"
       }
+    },
+    {
+      "path": "pages/prizes/prizes",
+      "style": {
+        "navigationBarTitleText": "奖品管理",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/members/members",
+      "style": {
+        "navigationBarTitleText": "家庭成员",
+        "navigationStyle": "custom"
+      }
     }
   ],
   "globalStyle": {

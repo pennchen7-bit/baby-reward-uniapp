@@ -2,6 +2,7 @@
  * API 接口封装
  */
 import { get, post, put, del } from '@/utils/request';
+import { API_BASE_URL } from '@/utils/config';
 
 /**
  * 认证相关
@@ -115,7 +116,34 @@ export const users = {
   update: (id, data) => put(`/users?id=${id}`, data),
   
   // 删除用户
-  delete: (id) => del('/users', { id }),
+  delete: (id) => {
+    return new Promise((resolve, reject) => {
+      const userInfo = uni.getStorageSync('user_info');
+      uni.request({
+        url: API_BASE_URL + '/users?id=' + id,
+        method: 'DELETE',
+        header: {
+          'Content-Type': 'application/json',
+          ...(userInfo ? { 
+            'X-User-Id': userInfo.id,
+            'X-User-Role': userInfo.role,
+            'X-Family-Id': userInfo.familyId || ''
+          } : {}),
+        },
+        success: (res) => {
+          if (res.statusCode === 200) {
+            resolve(res.data);
+          } else {
+            reject(new Error(res.data?.error || '删除失败'));
+          }
+        },
+        fail: (err) => {
+          console.error('Delete user error:', err);
+          reject(new Error('网络错误'));
+        }
+      });
+    });
+  },
 };
 
 export default {

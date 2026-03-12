@@ -3,8 +3,8 @@
  */
 
 // 后端 API 地址
-// 生产环境已部署到 Vercel
-export const API_BASE_URL = 'https://baby-reward-api.vercel.app/api';
+// 生产环境部署到阿里云
+export const API_BASE_URL = 'https://www.clovey.fun/api';
 
 // 替换成你的后端地址（部署后）
 // export const API_BASE_URL = 'https://your-app.vercel.app/api';
