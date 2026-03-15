@@ -3,7 +3,7 @@
  */
 
 // 后端 API 地址 - 生产环境
-export const API_BASE_URL = 'https://www.clovey.fun/api';
+export const API_BASE_URL = 'https://baby-reward.clovey.site/api';
 
 // 开发环境（本地测试时用）
 // export const API_BASE_URL = 'http://localhost:3000/api';

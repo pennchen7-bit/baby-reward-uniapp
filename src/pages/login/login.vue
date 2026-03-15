@@ -92,28 +92,15 @@ export default {
         uni.removeStorageSync('invite_role');
         uni.setStorageSync('user_info', res.user);
         
-        if (res.isNewUser) {
-          if (res.family) {
-            uni.setStorageSync('family_code', res.family.familyCode);
-            uni.showToast({
-              title: `🎉 创建成功！家庭码：${res.family.familyCode}`,
-              icon: 'none',
-              duration: 3000,
-            });
-          } else {
-            uni.showToast({
-              title: '✅ 加入家庭成功',
-              icon: 'success',
-              duration: 2000,
-            });
-          }
+        if (res.isNewUser && res.family) {
+          // 首次创建家庭，保存家庭码
+          uni.setStorageSync('family_code', res.family.familyCode);
         }
         
-        setTimeout(() => {
-          uni.reLaunch({
-            url: '/pages/index/index',
-          });
-        }, 2000);
+        // 直接跳转，不显示提示
+        uni.reLaunch({
+          url: '/pages/index/index',
+        });
         
       } catch (err) {
         console.error('Wechat login error:', err);

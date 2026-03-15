@@ -21,15 +21,17 @@
       </view>
 
       <view v-else v-for="(prize, index) in prizes" :key="prize.id" class="prize-card">
-        <view class="prize-icon">{{ prize.imageUrl || '🎁' }}</view>
-        <view class="prize-info">
-          <text class="prize-name">{{ prize.name }}</text>
-          <text v-if="prize.description" class="prize-desc">{{ prize.description }}</text>
-          <text v-if="prize.points > 0" class="prize-points">⭐ {{ prize.points }} 积分</text>
+        <view class="prize-left">
+          <view class="prize-icon">{{ prize.imageUrl || '🎁' }}</view>
+          <view class="prize-info">
+            <text class="prize-name">{{ prize.name }}</text>
+            <text v-if="prize.description" class="prize-desc">{{ prize.description }}</text>
+            <text v-if="prize.points > 0" class="prize-points">⭐ {{ prize.points }} 积分</text>
+          </view>
         </view>
         <view class="prize-actions">
-          <button class="btn-edit" @click="editPrize(prize)">编辑</button>
-          <button class="btn-delete" @click="deletePrize(prize)">删除</button>
+          <button class="btn-icon" @click="editPrize(prize)">✏️</button>
+          <button class="btn-icon delete" @click="deletePrize(prize)">🗑️</button>
         </view>
       </view>
     </scroll-view>
@@ -256,6 +258,8 @@ export default {
 }
 
 .prize-list {
+  width: 100%;
+  box-sizing: border-box;
   flex: 1;
   background: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(10rpx);
@@ -263,6 +267,8 @@ export default {
   padding: 24rpx;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .empty {

@@ -9,29 +9,42 @@
 
     <!-- 家庭码卡片 -->
     <view class="family-card">
-      <text class="family-label">家庭码</text>
-      <text class="family-code">{{ familyCode }}</text>
-      <button class="btn-copy" @click="copyFamilyCode">复制</button>
+      <view class="family-card-header">
+        <text class="family-label">🏠 家庭码</text>
+        <button class="btn-copy" @click="copyFamilyCode">📋 复制</button>
+      </view>
+      <text class="family-code">{{ familyCode || '加载中...' }}</text>
     </view>
 
     <!-- 成员列表 -->
     <scroll-view class="member-list" scroll-y>
       <view v-for="member in members" :key="member.id" class="member-card">
-        <view class="member-avatar">
-          <text class="avatar-icon">👤</text>
-        </view>
-        <view class="member-info">
-          <text class="member-name">{{ member.username }}</text>
-          <view class="member-role">
-            <text v-if="member.role === 'admin'" class="role-badge admin">管理员</text>
-            <text v-else-if="member.role === 'parent'" class="role-badge parent">家长</text>
-            <text v-else-if="member.role === 'baby'" class="role-badge baby">宝宝</text>
+        <view class="member-left">
+          <view class="member-avatar">
+            <text class="avatar-icon">{{ member.role === 'baby' ? '👶' : member.role === 'parent' ? '👨‍👩‍👧' : '👑' }}</text>
+          </view>
+          <view class="member-info">
+            <text class="member-name">{{ member.username }}</text>
+            <view class="member-role">
+              <text v-if="member.role === 'admin'" class="role-badge admin">👑 管理员</text>
+              <text v-else-if="member.role === 'parent'" class="role-badge parent">👨‍👩‍👧 家长</text>
+              <text v-else-if="member.role === 'baby'" class="role-badge baby">👶 宝宝</text>
+            </view>
           </view>
         </view>
         <view v-if="canManage(member)" class="member-actions">
-          <button v-if="member.role !== 'admin'" class="btn-set-admin" @click="setRole(member, 'admin')">设为管理员</button>
-          <button v-if="member.role !== 'parent'" class="btn-set-parent" @click="setRole(member, 'parent')">设为家长</button>
-          <button v-if="member.role !== 'baby'" class="btn-set-baby" @click="setRole(member, 'baby')">设为宝宝</button>
+          <view class="role-switcher">
+            <button 
+              class="role-btn" 
+              :class="{ active: member.role === 'parent' }"
+              @click="setRole(member, 'parent')"
+            >家长</button>
+            <button 
+              class="role-btn" 
+              :class="{ active: member.role === 'baby' }"
+              @click="setRole(member, 'baby')"
+            >宝宝</button>
+          </view>
           <button class="btn-remove" @click="removeMember(member)">移除</button>
         </view>
       </view>
@@ -223,6 +236,8 @@ export default {
 }
 
 .member-list {
+  width: 100%;
+  box-sizing: border-box;
   flex: 1;
   background: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(10rpx);
@@ -289,12 +304,49 @@ export default {
 .role-badge.baby { background: #fce7f3; color: #ec4899; }
 
 .member-actions {
-  flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  gap: 8rpx;
+  gap: 12rpx;
+  margin-left: 20rpx;
+  align-items: flex-end;
 }
 
+.role-switcher {
+  display: flex;
+  gap: 8rpx;
+  background: #f3f4f6;
+  padding: 6rpx;
+  border-radius: 20rpx;
+}
+
+.role-btn {
+  padding: 8rpx 20rpx;
+  font-size: 22rpx;
+  border-radius: 16rpx;
+  border: none;
+  background: transparent;
+  color: #6b7280;
+  line-height: 1;
+  margin: 0;
+}
+
+.role-btn.active {
+  background: #ffffff;
+  color: #667eea;
+  font-weight: 600;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.08);
+}
+
+.btn-remove {
+  padding: 10rpx 24rpx;
+  font-size: 24rpx;
+  border-radius: 20rpx;
+  border: none;
+  background: #fee2e2;
+  color: #dc2626;
+  font-weight: 500;
+  margin: 0;
+}
 .btn-set-admin, .btn-set-parent, .btn-set-baby, .btn-remove {
   padding: 12rpx 20rpx;
   border-radius: 8rpx;

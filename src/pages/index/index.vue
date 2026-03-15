@@ -56,27 +56,32 @@
 
     <!-- 宝宝抽奖区域 -->
     <view v-if="userInfo?.role === 'baby'" class="draw-section">
-      <!-- 抽奖结果 -->
-      <view v-if="result" class="result-card">
-        <text class="result-emoji">🎉</text>
-        <text class="result-title">恭喜你！</text>
-        <text class="prize-emoji">{{ result.prize.imageUrl || '🏆' }}</text>
-        <text class="prize-name">{{ result.prize.name }}</text>
-        <text v-if="result.prize.points > 0" class="prize-points">⭐ {{ result.prize.points }} 积分</text>
-      </view>
-
       <!-- 已批准可抽奖 -->
-      <view v-else-if="requestStatus === 'approved'" class="draw-card">
+      <view v-if="requestStatus === 'approved'" class="draw-card">
         <text class="draw-emoji">✨</text>
         <text class="draw-title">家长已批准！</text>
         <text class="draw-subtitle">可以开始抽奖啦～</text>
+        
+        <!-- 抽奖按钮 -->
         <button 
+          v-if="!result"
           class="btn-draw" 
           :disabled="isSpinning"
           @click="handleDraw"
         >
           {{ isSpinning ? '抽奖中...' : '🎰 开始抽奖' }}
         </button>
+        
+        <!-- 抽奖完成后显示结果和再抽一次按钮 -->
+        <view v-else class="result-section">
+          <view class="result-card">
+            <text class="result-emoji">🎉</text>
+            <text class="result-title">恭喜你抽中：</text>
+            <text class="result-name">{{ result.prize.name }}</text>
+            <text v-if="result.prize.points > 0" class="result-points">⭐ {{ result.prize.points }} 积分</text>
+          </view>
+          <button class="btn-redraw" @click="handleRedraw">🔄 再抽一次</button>
+        </view>
       </view>
 
       <!-- 等待批准 -->
@@ -255,8 +260,8 @@ export default {
           status: 'approved'
         });
         
-        if (approvedRes.records && approvedRes.records.length > 0) {
-          this.activeRequest = approvedRes.records[0];
+        if (approvedRes.requests && approvedRes.requests.length > 0) {
+          this.activeRequest = approvedRes.requests[0];
           this.requestStatus = 'approved';
           return;
         }
@@ -267,8 +272,8 @@ export default {
           status: 'pending'
         });
         
-        if (pendingRes.records && pendingRes.records.length > 0) {
-          this.activeRequest = pendingRes.records[0];
+        if (pendingRes.requests && pendingRes.requests.length > 0) {
+          this.activeRequest = pendingRes.requests[0];
           this.requestStatus = 'pending';
         }
       } catch (err) {
@@ -283,7 +288,7 @@ export default {
           familyId: this.userInfo.familyId,
           status: 'pending'
         });
-        this.pendingRequests = res.records || [];
+        this.pendingRequests = res.requests || [];
       } catch (err) {
         console.error('Fetch pending requests error:', err);
       }
@@ -393,12 +398,7 @@ export default {
         });
         
         this.result = res;
-        
-        setTimeout(() => {
-          this.isSpinning = false;
-          this.requestStatus = 'none';
-          this.activeRequest = null;
-        }, 3000);
+        this.isSpinning = false;
       } catch (err) {
         uni.showToast({
           title: err.message || '抽奖失败',
@@ -406,6 +406,11 @@ export default {
         });
         this.isSpinning = false;
       }
+    },
+    
+    handleRedraw() {
+      // 清除结果，重新开始抽奖
+      this.result = null;
     },
     
     // 显示审批弹窗
@@ -1040,3 +1045,67 @@ export default {
   color: #ffffff;
 }
 </style>
+
+.result-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 32rpx;
+  margin-top: 32rpx;
+  width: 100%;
+}
+
+.result-card {
+  background: linear-gradient(135deg, #f3e8ff 0%, #fce7f3 100%);
+  border-radius: 24rpx;
+  padding: 40rpx 32rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16rpx;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.result-emoji {
+  font-size: 80rpx;
+  margin-bottom: 8rpx;
+}
+
+.result-title {
+  font-size: 28rpx;
+  color: #6b7280;
+}
+
+.result-name {
+  font-size: 36rpx;
+  font-weight: 700;
+  color: #1f2937;
+  text-align: center;
+}
+
+.result-points {
+  font-size: 28rpx;
+  color: #f59e0b;
+  font-weight: 600;
+  background: rgba(245, 158, 11, 0.1);
+  padding: 8rpx 24rpx;
+  border-radius: 20rpx;
+}
+
+.btn-redraw {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #ffffff;
+  padding: 20rpx 48rpx;
+  border-radius: 32rpx;
+  font-size: 30rpx;
+  font-weight: 600;
+  border: none;
+  margin: 0;
+  box-shadow: 0 6rpx 16rpx rgba(102, 126, 234, 0.3);
+}
+
+.btn-redraw:active {
+  opacity: 0.8;
+  transform: scale(0.98);
+}

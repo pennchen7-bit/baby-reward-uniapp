@@ -37,21 +37,27 @@
 
       <!-- 请求卡片 -->
       <view v-for="req in filteredRequests" :key="req.id" class="request-card">
-        <view class="request-left">
-          <view class="request-icon">{{ req.status === 'approved' ? '✅' : req.status === 'rejected' ? '❌' : '🔔' }}</view>
+        <view class="request-header">
+          <view class="request-badge" :class="req.status">{{ req.status === 'approved' ? '✅' : req.status === 'rejected' ? '❌' : '🔔' }}</view>
           <view class="request-info">
-            <text class="request-name">{{ req.babyName }} 申请抽奖</text>
+            <text class="request-name">{{ req.babyName || '宝宝' }} 申请抽奖</text>
             <text class="request-time">{{ formatTime(req.createdAt) }}</text>
           </view>
         </view>
         
+        <view v-if="req.reason" class="request-reason">
+          <text class="reason-label">申请原因：</text>
+          <text class="reason-text">{{ req.reason }}</text>
+        </view>
+        
         <view v-if="req.status === 'pending'" class="request-actions">
-          <button class="btn-approve" @click="handleApprove(req, true)">批准</button>
-          <button class="btn-reject" @click="handleApprove(req, false)">拒绝</button>
+          <button class="btn-action reject" @click="handleApprove(req, false)">拒绝</button>
+          <button class="btn-action approve" @click="handleApprove(req, true)">批准</button>
         </view>
         
         <view v-else class="request-status">
-          <text class="status-text">{{ req.reason || '已处理' }}</text>
+          <text class="status-badge" :class="req.status">{{ req.status === 'approved' ? '已批准' : req.status === 'rejected' ? '已拒绝' : '已完成' }}</text>
+          <text v-if="req.approvedByName" class="status-processor">审批人：{{ req.approvedByName }}</text>
         </view>
       </view>
     </scroll-view>
@@ -59,19 +65,32 @@
     <!-- 审批弹窗 -->
     <view v-if="showApproval" class="modal-overlay" @click="showApproval = false">
       <view class="modal-content" @click.stop>
-        <text class="modal-title">审批请求</text>
-        <text class="modal-subtitle">👶 {{ activeRequest?.babyName }} 申请抽奖</text>
+        <view class="modal-header">
+          <text class="modal-icon">📝</text>
+          <text class="modal-title">审批抽奖申请</text>
+        </view>
+        
+        <view class="modal-info">
+          <text class="info-label">申请人</text>
+          <text class="info-value">{{ activeRequest?.babyName || '宝宝' }}</text>
+        </view>
+        
+        <view class="modal-info">
+          <text class="info-label">申请时间</text>
+          <text class="info-value">{{ activeRequest?.createdAt ? formatTime(activeRequest.createdAt) : '-' }}</text>
+        </view>
         
         <textarea 
           class="modal-textarea" 
           v-model="approvalReason"
-          placeholder="请填写原因（必填）"
+          placeholder="请填写审批原因（可选）"
+          maxlength="200"
         />
         
         <view class="modal-actions">
-          <button class="btn-cancel" @click="showApproval = false">取消</button>
-          <button class="btn-approve-modal" @click="submitApproval(true)">批准</button>
-          <button class="btn-reject-modal" @click="submitApproval(false)">拒绝</button>
+          <button class="btn-modal cancel" @click="showApproval = false">取消</button>
+          <button class="btn-modal reject" @click="submitApproval(false)">拒绝</button>
+          <button class="btn-modal approve" @click="submitApproval(true)">批准</button>
         </view>
       </view>
     </view>
@@ -144,7 +163,7 @@ export default {
           familyId: this.userInfo?.familyId,
         });
         
-        this.allRequests = res.records || [];
+        this.allRequests = res.requests || [];
         
         // 更新筛选计数
         this.filters.forEach(filter => {
@@ -522,3 +541,180 @@ export default {
   color: #ffffff;
 }
 </style>
+
+/* 优化的卡片样式 */
+.request-header {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  margin-bottom: 16rpx;
+}
+
+.request-badge {
+  width: 72rpx;
+  height: 72rpx;
+  background: linear-gradient(135deg, #f3e8ff 0%, #fce7f3 100%);
+  border-radius: 16rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36rpx;
+  flex-shrink: 0;
+}
+
+.request-reason {
+  background: rgba(243, 244, 246, 0.8);
+  padding: 16rpx 20rpx;
+  border-radius: 12rpx;
+  margin-bottom: 16rpx;
+}
+
+.reason-label {
+  font-size: 22rpx;
+  color: #6b7280;
+  display: block;
+  margin-bottom: 8rpx;
+}
+
+.reason-text {
+  font-size: 26rpx;
+  color: #374151;
+  line-height: 1.5;
+}
+
+.request-actions {
+  display: flex;
+  gap: 16rpx;
+  margin-top: 8rpx;
+}
+
+.btn-action {
+  flex: 1;
+  height: 72rpx;
+  border-radius: 36rpx;
+  font-size: 28rpx;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  margin: 0;
+}
+
+.btn-action.approve {
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  color: #ffffff;
+  box-shadow: 0 4rpx 12rpx rgba(34, 197, 94, 0.3);
+}
+
+.btn-action.reject {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 8rpx 20rpx;
+  border-radius: 20rpx;
+  font-size: 24rpx;
+  font-weight: 600;
+}
+
+.status-badge.approved {
+  background: rgba(34, 197, 94, 0.1);
+  color: #22c55e;
+}
+
+.status-badge.rejected {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+.status-badge.completed {
+  background: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+}
+
+.status-processor {
+  display: block;
+  font-size: 22rpx;
+  color: #9ca3af;
+  margin-top: 8rpx;
+}
+
+/* 优化的弹窗样式 */
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12rpx;
+  margin-bottom: 24rpx;
+}
+
+.modal-icon {
+  font-size: 48rpx;
+}
+
+.modal-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16rpx 0;
+  border-bottom: 1rpx solid #f3f4f6;
+}
+
+.info-label {
+  font-size: 26rpx;
+  color: #6b7280;
+}
+
+.info-value {
+  font-size: 26rpx;
+  color: #1f2937;
+  font-weight: 500;
+}
+
+.modal-textarea {
+  width: 100%;
+  min-height: 160rpx;
+  background: #f9fafb;
+  border: 2rpx solid #e5e7eb;
+  border-radius: 12rpx;
+  padding: 16rpx;
+  font-size: 26rpx;
+  color: #1f2937;
+  margin: 20rpx 0;
+  box-sizing: border-box;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 12rpx;
+  margin-top: 24rpx;
+}
+
+.btn-modal {
+  flex: 1;
+  height: 80rpx;
+  border-radius: 40rpx;
+  font-size: 28rpx;
+  font-weight: 600;
+  border: none;
+  margin: 0;
+}
+
+.btn-modal.cancel {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.btn-modal.reject {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.btn-modal.approve {
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  color: #ffffff;
+  box-shadow: 0 4rpx 12rpx rgba(34, 197, 94, 0.3);
+}

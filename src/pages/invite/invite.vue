@@ -3,83 +3,109 @@
     <!-- 头部 -->
     <view class="header">
       <view class="back-btn" @click="goBack"><text class="back-icon">‹</text></view>
-      <text class="title">📧 邀请家人</text>
-      <text class="subtitle">邀请家人加入你的家庭</text>
+      <text class="title">{{ isInvitee ? '🎉 加入家庭' : '📧 邀请家人' }}</text>
+      <text class="subtitle">{{ isInvitee ? '接受邀请加入家庭' : '邀请家人加入你的家庭' }}</text>
     </view>
 
-    <!-- 家庭信息卡片 -->
-    <view class="family-card">
-      <view class="family-info">
-        <text class="family-label">当前家庭</text>
-        <text class="family-name">{{ familyName }}</text>
-        <view class="family-code-box">
-          <text class="family-code-label">家庭码</text>
-          <text class="family-code-value">{{ familyCode }}</text>
+    <!-- 被邀请人：显示邀请信息 -->
+    <view v-if="isInvitee" class="invitee-section">
+      <view class="invite-card">
+        <text class="invite-title">🎁 你收到一个邀请</text>
+        <view class="invite-info">
+          <text class="invite-label">家庭码</text>
+          <text class="invite-code">{{ inviteCode || '加载中...' }}</text>
+        </view>
+        <view class="invite-info">
+          <text class="invite-label">邀请角色</text>
+          <text class="invite-role">{{ inviteRole === 'parent' ? '👨‍👩‍👧 家长' : '👶 宝宝' }}</text>
         </view>
       </view>
-    </view>
-
-    <!-- 选择角色 -->
-    <view class="role-section">
-      <text class="section-title">选择邀请角色</text>
       
-      <view class="role-options">
-        <view 
-          class="role-option" 
-          :class="{ active: role === 'parent' }"
-          @click="role = 'parent'"
-        >
-          <text class="role-icon">👨‍👩‍👧</text>
-          <text class="role-name">家长</text>
-          <text class="role-desc">可以审批和管理</text>
-        </view>
-        
-        <view 
-          class="role-option" 
-          :class="{ active: role === 'baby' }"
-          @click="role = 'baby'"
-        >
-          <text class="role-icon">👶</text>
-          <text class="role-name">儿童</text>
-          <text class="role-desc">可以抽奖和查看历史</text>
-        </view>
-      </view>
-    </view>
-
-    <!-- 生成邀请 -->
-    <button 
-      class="btn-generate"
-      :disabled="generating"
-      @click="handleGenerate"
-    >
-      {{ generating ? '生成中...' : '生成邀请链接' }}
-    </button>
-
-    <!-- 邀请结果 -->
-    <view v-if="inviteLink" class="invite-result">
-      <text class="result-title">✅ 邀请链接已生成</text>
-      
-      <view class="invite-info">
-        <text class="invite-info-text">{{ displayLink }}</text>
-      </view>
-      
-      <button class="btn-share" open-type="share">
-        <text class="share-icon">📤</text>
-        <text class="share-text">分享给微信好友</text>
-      </button>
-      
-      <button class="btn-timeline" open-type="shareTimeline">
-        <text class="timeline-icon">🔄</text>
-        <text class="timeline-text">分享到朋友圈</text>
+      <button 
+        class="btn-join"
+        :disabled="joining"
+        @click="handleJoin"
+      >
+        {{ joining ? '加入中...' : '✅ 确认加入' }}
       </button>
       
       <view class="tips">
-        <text class="tips-title">💡 使用说明</text>
-        <text class="tips-text">1. 点击"分享给微信好友"发送小程序卡片</text>
-        <text class="tips-text">2. 或点击"分享到朋友圈"分享到微信朋友圈</text>
-        <text class="tips-text">3. 对方点击卡片后自动跳转到登录页</text>
-        <text class="tips-text">4. 微信登录后自动加入你的家庭</text>
-        <text class="tips-text">5. 链接 24 小时内有效</text>
+        <text class="tips-title">💡 说明</text>
+        <text class="tips-text">1. 点击"确认加入"后自动加入该家庭</text>
+        <text class="tips-text">2. 如果未登录，将自动跳转到登录页</text>
+        <text class="tips-text">3. 登录后自动加入，无需再次操作</text>
+      </view>
+    </view>
+
+    <!-- 管理员：显示生成邀请界面 -->
+    <view v-else-if="familyCode">
+      <!-- 家庭信息卡片 -->
+      <view class="family-card">
+        <view class="family-info">
+          <text class="family-label">当前家庭</text>
+          <text class="family-name">{{ familyName }}</text>
+          <view class="family-code-box">
+            <text class="family-code-label">家庭码</text>
+            <text class="family-code-value">{{ familyCode }}</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 选择角色 -->
+      <view class="role-section">
+        <text class="section-title">选择邀请角色</text>
+        
+        <view class="role-options">
+          <view 
+            class="role-option" 
+            :class="{ active: role === 'parent' }"
+            @click="role = 'parent'"
+          >
+            <text class="role-icon">👨‍👩‍👧</text>
+            <text class="role-name">家长</text>
+            <text class="role-desc">可以审批和管理</text>
+          </view>
+          
+          <view 
+            class="role-option" 
+            :class="{ active: role === 'baby' }"
+            @click="role = 'baby'"
+          >
+            <text class="role-icon">👶</text>
+            <text class="role-name">儿童</text>
+            <text class="role-desc">可以抽奖和查看历史</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 生成邀请 -->
+      <button 
+        class="btn-generate"
+        :disabled="generating"
+        @click="handleGenerate"
+      >
+        {{ generating ? '生成中...' : '生成邀请链接' }}
+      </button>
+
+      <!-- 邀请结果 -->
+      <view v-if="inviteLink" class="invite-result">
+        <text class="result-title">✅ 邀请链接已生成</text>
+        
+        <view class="invite-info">
+          <text class="invite-info-text">{{ displayLink }}</text>
+        </view>
+        
+        <button class="btn-share" open-type="share">
+          <text class="share-icon">📤</text>
+          <text class="share-text">分享给微信好友</text>
+        </button>
+        
+        <view class="tips">
+          <text class="tips-title">💡 使用说明</text>
+          <text class="tips-text">1. 点击"分享给微信好友"发送小程序卡片</text>
+          <text class="tips-text">2. 对方点击卡片后自动跳转到登录页</text>
+          <text class="tips-text">3. 微信登录后自动加入你的家庭</text>
+        </view>
       </view>
     </view>
   </view>
@@ -96,31 +122,61 @@ export default {
       role: 'parent',
       generating: false,
       inviteLink: '',
+      // 新字段
+      isInvitee: false,  // 是否是被邀请人
+      inviteCode: '',    // 邀请码
+      inviteRole: 'parent',  // 邀请角色
+      joining: false,    // 加入中
     };
   },
   
-  onLoad() {
-    const user = uni.getStorageSync('user_info');
-    if (user) {
-      this.familyName = user.familyName || '';
-      this.familyCode = user.familyCode || '';
+  onLoad(options) {
+    console.log('Invite page loaded, options:', options);
+    
+    // 检查是否有邀请码参数（被邀请人）
+    if (options && options.code) {
+      // 被邀请人：显示接受邀请界面
+      this.isInvitee = true;
+      this.inviteCode = options.code;
+      this.inviteRole = options.role || 'parent';
+      console.log('被邀请人，code:', this.inviteCode, 'role:', this.inviteRole);
+    } else {
+      // 管理员：显示生成邀请界面
+      this.isInvitee = false;
+      const user = uni.getStorageSync('user_info');
+      if (user) {
+        this.familyName = user.familyName || '';
+        this.familyCode = user.familyCode || '';
+        console.log('管理员，familyName:', this.familyName, 'familyCode:', this.familyCode);
+      }
     }
   },
   
-  // 小程序分享配置
+  // 小程序分享配置（动态更新）
   onShareAppMessage() {
+    if (this.familyCode) {
+      return {
+        title: `📧 邀请你加入${this.familyName}`,
+        path: `/pages/invite/invite?code=${this.familyCode}&role=${this.role}`,
+        imageUrl: '',
+      };
+    }
     return {
-      title: `🎁 邀请你加入${this.familyName}家庭`,
-      path: `${this.inviteLink}&familyName=${encodeURIComponent(this.familyName)}`,
-      imageUrl: ''
+      title: `📧 邀请加入${this.familyName}`,
+      path: '/pages/index/index',
     };
   },
   
   // 分享到朋友圈
   onShareTimeline() {
+    if (this.familyCode) {
+      return {
+        title: `📧 邀请加入${this.familyName}`,
+        query: `code=${this.familyCode}&role=${this.role}`,
+      };
+    }
     return {
-      title: `🎁 邀请你加入${this.familyName}家庭`,
-      query: `${this.inviteLink}&familyName=${encodeURIComponent(this.familyName)}`,
+      title: `📧 邀请加入`,
     };
   },
   
@@ -134,14 +190,18 @@ export default {
       
       try {
         const res = await invite.generate({ role: this.role });
+        // 保存家庭码和名称
+        this.familyCode = res.familyCode;
+        this.familyName = res.familyName;
         // 保存完整的邀请链接（小程序路径）
-        this.inviteLink = res.inviteLink;
+        this.inviteLink = res.invitePath || `/pages/invite/invite?code=${res.familyCode}`;
         // 同时保存用于显示的短链接
-        this.displayLink = `家庭码：${this.familyCode} | 角色：${this.role === 'parent' ? '家长' : '宝宝'}`;
+        this.displayLink = `家庭码：${res.familyCode} | 角色：${this.role === 'parent' ? '家长' : '宝宝'}`;
         
         uni.showToast({
-          title: '生成成功',
+          title: '生成成功，请点击下方按钮分享',
           icon: 'success',
+          duration: 2000,
         });
       } catch (err) {
         uni.showToast({
@@ -151,6 +211,80 @@ export default {
         });
       } finally {
         this.generating = false;
+      }
+    },
+    
+    // 被邀请人：确认加入
+    async handleJoin() {
+      console.log('handleJoin called, inviteCode:', this.inviteCode, 'inviteRole:', this.inviteRole);
+      
+      if (!this.inviteCode) {
+        uni.showToast({ title: '邀请码无效', icon: 'none' });
+        return;
+      }
+      
+      this.joining = true;
+      
+      try {
+        // 检查是否已登录
+        const userInfo = uni.getStorageSync('user_info');
+        console.log('userInfo:', userInfo);
+        
+        if (userInfo && userInfo.wechatOpenid) {
+          // 已登录：直接调用加入接口
+          console.log('Calling invite.join with:', {
+            code: this.inviteCode,
+            wechatOpenid: userInfo.wechatOpenid,
+            username: userInfo.username,
+          });
+          
+          const res = await invite.join(this.inviteCode, {
+            wechatOpenid: userInfo.wechatOpenid,
+            username: userInfo.username,
+          });
+          
+          console.log('Join result:', res);
+          
+          if (res.success) {
+            // 更新本地用户信息
+            uni.setStorageSync('user_info', res.user);
+            
+            uni.showToast({
+              title: '✅ 加入成功',
+              icon: 'success',
+              duration: 2000,
+            });
+            
+            // 跳转到首页
+            setTimeout(() => {
+              uni.reLaunch({ url: '/pages/index/index' });
+            }, 2000);
+          }
+        } else {
+          // 未登录：跳转到登录页，带上邀请码
+          console.log('Not logged in, redirect to login');
+          uni.setStorageSync('invite_code', this.inviteCode);
+          uni.setStorageSync('invite_role', this.inviteRole);
+          
+          uni.showToast({
+            title: '请先登录',
+            icon: 'none',
+            duration: 1500,
+          });
+          
+          setTimeout(() => {
+            uni.navigateTo({ url: '/pages/login/login' });
+          }, 1500);
+        }
+      } catch (err) {
+        console.error('Join error:', err);
+        uni.showToast({
+          title: err.message || '加入失败',
+          icon: 'none',
+          duration: 3000,
+        });
+      } finally {
+        this.joining = false;
       }
     },
     
@@ -170,6 +304,23 @@ export default {
           },
         });
       }
+    },
+    
+    // 分享给好友
+    onShareAppMessage() {
+      return {
+        title: `📧 邀请你加入${this.familyName}`,
+        path: `/pages/invite/invite?code=${this.familyCode}&role=${this.role}`,
+        imageUrl: '', // 使用默认封面图
+      };
+    },
+    
+    // 分享到朋友圈
+    onShareTimeline() {
+      return {
+        title: `📧 邀请加入${this.familyName}`,
+        query: `code=${this.familyCode}&role=${this.role}`,
+      };
     },
     
     handleCopy() {
