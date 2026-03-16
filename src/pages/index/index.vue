@@ -19,9 +19,10 @@
       </view>
       
       <view class="user-info-right">
-        <view class="family-code-box">
-          <text class="family-code-label">家庭码</text>
-          <text class="family-code-value">{{ userInfo.familyCode }}</text>
+        <view class="family-name-box" @click="editFamilyName">
+          <text class="family-name-label">🏠 家庭</text>
+          <text class="family-name-value">{{ userInfo.familyName || '未设置' }}</text>
+          <text v-if="userInfo.role === 'admin'" class="edit-icon">✏️</text>
         </view>
         <button v-if="isAdminOrParent" class="btn-invite" @click="goToInvite">
           <text class="invite-icon">📧</text>
@@ -495,6 +496,69 @@ export default {
       uni.navigateTo({ url });
     },
     
+    // 编辑家庭名称
+    editFamilyName() {
+      if (this.userInfo.role !== 'admin') return;
+      
+      uni.showModal({
+        title: '编辑家庭名称',
+        editable: true,
+        placeholderText: '请输入家庭名称',
+        defaultText: this.userInfo.familyName || '',
+        success: (res) => {
+          if (res.confirm && res.content) {
+            this.updateFamilyName(res.content);
+          }
+        }
+      });
+    },
+    
+    async updateFamilyName(name) {
+      try {
+        const API_BASE_URL = 'https://baby-reward.clovey.site/api';
+        const userInfo = uni.getStorageSync('user_info');
+        
+        await new Promise((resolve, reject) => {
+          uni.request({
+            url: `${API_BASE_URL}/families/name`,
+            method: 'PUT',
+            data: { name },
+            header: {
+              'Content-Type': 'application/json',
+              'X-User-Id': userInfo.id,
+              'X-User-Role': userInfo.role,
+              'X-Family-Id': userInfo.familyId,
+            },
+            success: (res) => {
+              if (res.statusCode === 200) {
+                resolve(res.data);
+              } else {
+                reject(new Error(res.data?.error || '更新失败'));
+              }
+            },
+            fail: (err) => {
+              reject(new Error('网络错误'));
+            }
+          });
+        });
+        
+        // 更新本地存储
+        userInfo.familyName = name;
+        uni.setStorageSync('user_info', userInfo);
+        this.userInfo = userInfo;
+        
+        uni.showToast({
+          title: '更新成功',
+          icon: 'success'
+        });
+      } catch (err) {
+        uni.showToast({
+          title: err.message || '更新失败',
+          icon: 'none'
+        });
+      }
+    },
+    
     handleLogout() {
       uni.showModal({
         title: '确认退出',
@@ -628,26 +692,33 @@ page {
   margin-top: 12rpx;
 }
 
-.family-code-box {
+.family-name-box {
   background: linear-gradient(135deg, #f0abfc 0%, #818cf8 100%);
   padding: 12rpx 20rpx;
   border-radius: 16rpx;
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4rpx;
 }
 
-.family-code-label {
+.family-name-label {
   display: block;
   font-size: 18rpx;
   color: rgba(255, 255, 255, 0.9);
-  margin-bottom: 2rpx;
 }
 
-.family-code-value {
+.family-name-value {
   display: block;
   font-size: 28rpx;
   font-weight: bold;
   color: #ffffff;
-  letter-spacing: 2rpx;
+}
+
+.edit-icon {
+  font-size: 20rpx;
+  margin-top: 4rpx;
 }
 
 .btn-invite {

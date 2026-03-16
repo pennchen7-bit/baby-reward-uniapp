@@ -21,7 +21,10 @@
             <text class="avatar-icon">{{ member.role === 'baby' ? '👶' : member.role === 'parent' ? '👨‍👩‍👧' : '👑' }}</text>
           </view>
           <view class="member-info">
-            <text class="member-name">{{ member.username }}</text>
+            <view class="member-name-row">
+              <text class="member-name">{{ member.username }}</text>
+              <text v-if="userInfo.role === 'admin'" class="edit-name-btn" @click="editMemberName(member)">✏️</text>
+            </view>
             <view class="member-role">
               <text v-if="member.role === 'admin'" class="role-badge admin">👑 管理员</text>
               <text v-else-if="member.role === 'parent'" class="role-badge parent">👨‍👩‍👧 家长</text>
@@ -133,6 +136,64 @@ export default {
           uni.showToast({ title: '已复制', icon: 'success' });
         }
       });
+    },
+    
+    // 编辑成员名字
+    editMemberName(member) {
+      uni.showModal({
+        title: '编辑成员名字',
+        editable: true,
+        placeholderText: '请输入新名字',
+        defaultText: member.username,
+        success: (res) => {
+          if (res.confirm && res.content) {
+            this.updateMemberName(member, res.content);
+          }
+        }
+      });
+    },
+    
+    async updateMemberName(member, newName) {
+      try {
+        const API_BASE_URL = 'https://baby-reward.clovey.site/api';
+        const userInfo = uni.getStorageSync('user_info');
+        
+        await new Promise((resolve, reject) => {
+          uni.request({
+            url: `${API_BASE_URL}/users/${member.id}`,
+            method: 'PUT',
+            data: { username: newName },
+            header: {
+              'Content-Type': 'application/json',
+              'X-User-Id': userInfo.id,
+              'X-User-Role': userInfo.role,
+              'X-Family-Id': userInfo.familyId,
+            },
+            success: (res) => {
+              if (res.statusCode === 200) {
+                resolve(res.data);
+              } else {
+                reject(new Error(res.data?.error || '更新失败'));
+              }
+            },
+            fail: (err) => {
+              reject(new Error('网络错误'));
+            }
+          });
+        });
+        
+        uni.showToast({
+          title: '更新成功',
+          icon: 'success'
+        });
+        
+        this.fetchMembers();
+      } catch (err) {
+        uni.showToast({
+          title: err.message || '更新失败',
+          icon: 'none'
+        });
+      }
     },
     
     goBack() {
@@ -290,10 +351,23 @@ page {
   gap: 8rpx;
 }
 
+.member-name-row {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  margin-bottom: 8rpx;
+}
+
 .member-name {
   font-size: 28rpx;
   font-weight: 600;
   color: #1f2937;
+  flex: 1;
+}
+
+.edit-name-btn {
+  font-size: 28rpx;
+  flex-shrink: 0;
 }
 
 .member-role {
