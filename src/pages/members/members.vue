@@ -156,10 +156,10 @@ page {
 .container {
   height: 100vh;
   background: linear-gradient(180deg, #f0abfc 0%, #818cf8 50%, #60a5fa 100%);
-  padding-top: calc(100rpx + env(safe-area-inset-top));
+  padding-top: max(100rpx, env(safe-area-inset-top));
   padding-left: 32rpx;
   padding-right: 32rpx;
-  padding-bottom: calc(40rpx + env(safe-area-inset-bottom));
+  padding-bottom: max(40rpx, env(safe-area-inset-bottom));
   display: flex;
   flex-direction: column;
   overflow: hidden;
