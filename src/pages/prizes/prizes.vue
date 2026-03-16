@@ -275,6 +275,8 @@ page {
   padding: 24rpx;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .empty {

@@ -521,6 +521,8 @@ page {
   text-align: center;
   margin-bottom: 24rpx;
   flex-shrink: 0;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .title {
@@ -552,6 +554,8 @@ page {
   gap: 20rpx;
   box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.1);
   flex-shrink: 0;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .user-info-left {
@@ -663,6 +667,8 @@ page {
   box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.08);
   backdrop-filter: blur(10rpx);
   flex-shrink: 0;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .approval-section.empty {
@@ -753,6 +759,8 @@ page {
   text-align: center;
   backdrop-filter: blur(10rpx);
   flex-shrink: 0;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .result-card, .draw-card, .pending-card {
