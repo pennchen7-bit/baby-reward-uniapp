@@ -238,9 +238,16 @@ export default {
 };
 </script>
 
+<style>
+page {
+  height: 100vh;
+  overflow: hidden;
+}
+</style>
+
 <style scoped>
 .container {
-  min-height: 100vh;
+  height: 100vh;
   background: linear-gradient(180deg, #f0abfc 0%, #818cf8 50%, #60a5fa 100%);
   padding-top: calc(100rpx + env(safe-area-inset-top));
   padding-bottom: calc(40rpx + env(safe-area-inset-bottom));
@@ -353,9 +360,10 @@ export default {
 
 /* 列表 */
 .list {
-  flex: 1;
+  height: calc(100vh - 350rpx);
   padding: 0 32rpx;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* 空状态 */

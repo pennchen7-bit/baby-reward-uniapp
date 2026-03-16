@@ -108,14 +108,24 @@ export default {
 };
 </script>
 
+<style>
+page {
+  height: 100vh;
+  overflow: hidden;
+}
+</style>
+
 <style scoped>
 .container {
-  min-height: 100vh;
+  height: 100vh;
   background: linear-gradient(180deg, #f0abfc 0%, #818cf8 50%, #60a5fa 100%);
   padding-top: calc(100rpx + env(safe-area-inset-top));
   padding-left: 32rpx;
   padding-right: 32rpx;
   padding-bottom: calc(200rpx + env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .back-btn {
@@ -181,7 +191,9 @@ export default {
 }
 
 .list {
-  height: calc(100vh - 400rpx);
+  height: calc(100vh - 350rpx);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .loading {

@@ -181,9 +181,16 @@ export default {
 };
 </script>
 
+<style>
+page {
+  height: 100vh;
+  overflow: hidden;
+}
+</style>
+
 <style scoped>
 .container {
-  min-height: 100vh;
+  height: 100vh;
   background: linear-gradient(180deg, #f0abfc 0%, #818cf8 50%, #60a5fa 100%);
   padding-top: calc(100rpx + env(safe-area-inset-top));
   padding-left: 32rpx;
@@ -191,6 +198,7 @@ export default {
   padding-bottom: calc(40rpx + env(safe-area-inset-bottom));
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .header {
@@ -258,17 +266,13 @@ export default {
 }
 
 .prize-list {
-  width: 100%;
-  box-sizing: border-box;
-  flex: 1;
+  height: calc(100vh - 300rpx);
   background: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(10rpx);
   border-radius: 24rpx 24rpx 0 0;
   padding: 24rpx;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  width: 100%;
-  box-sizing: border-box;
 }
 
 .empty {

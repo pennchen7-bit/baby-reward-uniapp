@@ -495,21 +495,32 @@ export default {
 };
 </script>
 
-<style scoped>
+<style>
+/* page 级别样式 - 禁止页面滚动 */
+page {
+  height: 100vh;
+  overflow: hidden;
+}
+</style>
 
+<style scoped>
 .container {
-  min-height: 100vh;
+  height: 100vh;
   background: linear-gradient(180deg, #f0abfc 0%, #818cf8 50%, #60a5fa 100%);
-  /* 关键：顶部留出足够空间，避免被导航栏遮挡 */
   padding-top: calc(100rpx + env(safe-area-inset-top));
   padding-left: 32rpx;
   padding-right: 32rpx;
-  padding-bottom: calc(200rpx + env(safe-area-inset-bottom));
+  padding-bottom: calc(100rpx + env(safe-area-inset-bottom));
+  box-sizing: border-box;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .header {
   text-align: center;
   margin-bottom: 24rpx;
+  flex-shrink: 0;
 }
 
 .title {
@@ -540,6 +551,7 @@ export default {
   align-items: center;
   gap: 20rpx;
   box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
 }
 
 .user-info-left {
@@ -642,27 +654,6 @@ export default {
   line-height: 1;
 }
 
-.user-tag, .family-code {
-  background: rgba(255, 255, 255, 0.2);
-  padding: 10rpx 20rpx;
-  border-radius: 28rpx;
-  font-size: 24rpx;
-  color: #ffffff;
-  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
-  backdrop-filter: blur(10rpx);
-}
-
-.role-badge {
-  margin-left: 6rpx;
-  padding: 3rpx 10rpx;
-  border-radius: 14rpx;
-  font-size: 18rpx;
-}
-
-.role-badge.baby { background: #fce7f3; color: #ec4899; }
-.role-badge.parent { background: rgba(220, 252, 231, 0.8); color: #22c55e; }
-.role-badge.admin { background: rgba(237, 233, 254, 0.8); color: #9333ea; }
-
 /* 审批区域 */
 .approval-section {
   background: rgba(255, 255, 255, 0.9);
@@ -671,6 +662,7 @@ export default {
   margin-bottom: 24rpx;
   box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.08);
   backdrop-filter: blur(10rpx);
+  flex-shrink: 0;
 }
 
 .approval-section.empty {
@@ -760,6 +752,7 @@ export default {
   box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.08);
   text-align: center;
   backdrop-filter: blur(10rpx);
+  flex-shrink: 0;
 }
 
 .result-card, .draw-card, .pending-card {
@@ -851,6 +844,10 @@ export default {
   margin-bottom: 24rpx;
   box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.08);
   backdrop-filter: blur(10rpx);
+  height: 400rpx;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .section-count {
@@ -863,10 +860,13 @@ export default {
   padding: 60rpx 20rpx;
   color: #9ca3af;
   font-size: 26rpx;
+  flex-shrink: 0;
 }
 
 .history-list {
-  max-height: 600rpx;
+  height: 400rpx;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .history-card {
@@ -942,6 +942,7 @@ export default {
   background: #ffffff;
   border-radius: 32rpx 32rpx 0 0;
   padding: 16rpx;
+  padding-bottom: calc(16rpx + env(safe-area-inset-bottom));
   box-shadow: 0 -4rpx 24rpx rgba(0, 0, 0, 0.08);
   z-index: 100;
 }
@@ -1044,7 +1045,6 @@ export default {
   background: #ef4444;
   color: #ffffff;
 }
-</style>
 
 .result-section {
   display: flex;
@@ -1109,3 +1109,4 @@ export default {
   opacity: 0.8;
   transform: scale(0.98);
 }
+</style>

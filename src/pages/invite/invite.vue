@@ -342,8 +342,9 @@ export default {
 
 <style scoped>
 .container {
-  min-height: 100vh;
+  height: 100vh;
   background: linear-gradient(180deg, #f0abfc 0%, #818cf8 50%, #60a5fa 100%);
+  overflow: hidden;
   padding: calc(100rpx + env(safe-area-inset-top)) 40rpx calc(40rpx + env(safe-area-inset-bottom));
 }
 
