@@ -408,11 +408,27 @@ export default {
       }
     },
     
-    handleRedraw() {
-      // 清除结果，返回到抽奖申请状态
+    async handleRedraw() {
+      // 清除结果，直接发起新的抽奖申请
       this.result = null;
-      this.requestStatus = 'none';
-      this.activeRequest = null;
+      
+      try {
+        await requests.create({
+          babyId: this.userInfo.id,
+          familyId: this.userInfo.familyId
+        });
+        
+        this.requestStatus = 'pending';
+        uni.showToast({
+          title: '已发起新的抽奖申请',
+          icon: 'success'
+        });
+      } catch (err) {
+        uni.showToast({
+          title: err.message || '申请失败',
+          icon: 'none'
+        });
+      }
     },
     
     // 显示审批弹窗
