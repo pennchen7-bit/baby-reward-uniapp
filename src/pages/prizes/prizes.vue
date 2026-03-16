@@ -271,7 +271,7 @@ page {
   height: calc(100vh - 300rpx);
   background: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(10rpx);
-  border-radius: 24rpx 24rpx 0 0;
+  border-radius: 24rpx;
   padding: 24rpx;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
