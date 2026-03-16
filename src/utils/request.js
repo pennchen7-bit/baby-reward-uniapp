@@ -87,10 +87,17 @@ export function put(url, data, options = {}) {
  * DELETE 请求
  */
 export function del(url, data, options = {}) {
+  // DELETE 请求需要将 data 拼接到 URL 上
+  if (data && typeof data === 'object') {
+    const params = Object.keys(data)
+      .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(data[key])}`)
+      .join('&');
+    url = url + (url.includes('?') ? '&' : '?') + params;
+  }
+  
   return request({
     url,
     method: 'DELETE',
-    data,
     ...options,
   });
 }

@@ -55,7 +55,7 @@ export const prizes = {
   update: (data) => put('/prizes', data),
   
   // 删除奖品
-  delete: (id) => del(`/prizes?id=${id}`),
+  delete: (id) => del('/prizes', { id }),
 };
 
 /**
