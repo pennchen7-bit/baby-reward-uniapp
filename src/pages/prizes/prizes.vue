@@ -7,6 +7,25 @@
       <text class="subtitle">{{ prizes.length }} 个奖品</text>
     </view>
 
+    <!-- AI 推荐区域（无奖品时显示） -->
+    <view v-if="prizes.length === 0" class="recommend-section">
+      <view class="recommend-header">
+        <text class="recommend-title">✨ AI 为您推荐</text>
+        <text class="recommend-subtitle">小朋友们都喜欢的奖品</text>
+      </view>
+      
+      <scroll-view class="recommend-list" scroll-x>
+        <view v-for="(item, index) in recommendations" :key="index" class="recommend-card" @click="addRecommendPrize(item)">
+          <view class="recommend-emoji">{{ item.emoji }}</view>
+          <view class="recommend-info">
+            <text class="recommend-name">{{ item.name }}</text>
+            <text class="recommend-points">⭐ {{ item.points }} 积分</text>
+          </view>
+          <view class="recommend-add">➕</view>
+        </view>
+      </scroll-view>
+    </view>
+
     <!-- 添加奖品按钮 -->
     <view class="add-btn" @click="showAddModal = true">
       <text class="add-icon">➕</text>
@@ -79,10 +98,21 @@
 <script>
 import { prizes } from '@/api/index';
 
+// 默认推荐奖品（小朋友喜欢的）
+const DEFAULT_RECOMMENDATIONS = [
+  { name: '看电视 30 分钟', description: '看动画片或儿童节目', points: 10, emoji: '📺' },
+  { name: '冰淇淋', description: '一支或一球', points: 10, emoji: '🍦' },
+  { name: '玩平板电脑', description: '1 小时平板时间', points: 25, emoji: '📱' },
+  { name: '去游乐园', description: '周末去游乐园', points: 150, emoji: '🎡' },
+  { name: '买玩具', description: '选择一个新玩具', points: 80, emoji: '🧸' },
+  { name: '薯片一包', description: '任选口味', points: 5, emoji: '🍟' },
+];
+
 export default {
   data() {
     return {
       prizes: [],
+      recommendations: DEFAULT_RECOMMENDATIONS,
       showAddModal: false,
       editingPrize: null,
       formData: {
@@ -177,6 +207,40 @@ export default {
     goBack() {
       uni.navigateBack();
     },
+    
+    // 添加推荐奖品
+    async addRecommendPrize(item) {
+      uni.showModal({
+        title: '添加奖品',
+        content: `确定要添加"${item.name}"到奖品列表吗？`,
+        success: async (res) => {
+          if (res.confirm) {
+            try {
+              const userInfo = uni.getStorageSync('user_info');
+              await prizes.create({
+                name: item.name,
+                description: item.description,
+                points: item.points,
+                imageUrl: item.emoji,
+                familyId: userInfo.familyId,
+              });
+              
+              uni.showToast({
+                title: '添加成功',
+                icon: 'success'
+              });
+              
+              this.fetchPrizes();
+            } catch (err) {
+              uni.showToast({
+                title: err.message || '添加失败',
+                icon: 'none'
+              });
+            }
+          }
+        }
+      });
+    },
   },
 };
 </script>
@@ -236,6 +300,82 @@ page {
   color: #ffffff;
   margin-bottom: 8rpx;
   text-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.15);
+}
+
+/* AI 推荐区域 */
+.recommend-section {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 24rpx;
+  padding: 24rpx;
+  margin-bottom: 24rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.08);
+}
+
+.recommend-header {
+  margin-bottom: 16rpx;
+}
+
+.recommend-title {
+  display: block;
+  font-size: 30rpx;
+  font-weight: bold;
+  color: #9333ea;
+  margin-bottom: 6rpx;
+}
+
+.recommend-subtitle {
+  display: block;
+  font-size: 24rpx;
+  color: #6b7280;
+}
+
+.recommend-list {
+  white-space: nowrap;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.recommend-card {
+  display: inline-flex;
+  align-items: center;
+  gap: 12rpx;
+  background: linear-gradient(135deg, #f3e8ff 0%, #fce7f3 100%);
+  border-radius: 16rpx;
+  padding: 16rpx 20rpx;
+  margin-right: 16rpx;
+  min-width: 280rpx;
+  box-sizing: border-box;
+}
+
+.recommend-emoji {
+  font-size: 48rpx;
+  flex-shrink: 0;
+}
+
+.recommend-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.recommend-name {
+  display: block;
+  font-size: 26rpx;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 4rpx;
+}
+
+.recommend-points {
+  display: block;
+  font-size: 22rpx;
+  color: #eab308;
+  font-weight: 600;
+}
+
+.recommend-add {
+  font-size: 32rpx;
+  color: #9333ea;
+  flex-shrink: 0;
 }
 
 .subtitle {
