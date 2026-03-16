@@ -9,10 +9,7 @@
 
     <!-- 家庭码卡片 -->
     <view class="family-card">
-      <view class="family-card-header">
-        <text class="family-label">🏠 家庭码</text>
-        <button class="btn-copy" @click="copyFamilyCode">📋 复制</button>
-      </view>
+      <text class="family-label">🏠 家庭码</text>
       <text class="family-code">{{ familyCode || '加载中...' }}</text>
     </view>
 

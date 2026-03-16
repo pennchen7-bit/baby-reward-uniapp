@@ -580,7 +580,7 @@ page {
   display: flex;
   align-items: center;
   gap: 12rpx;
-  flex: 1;
+  flex-wrap: wrap;
   min-width: 0;
 }
 
@@ -591,6 +591,7 @@ page {
   background: rgba(240, 171, 252, 0.15);
   padding: 10rpx 16rpx;
   border-radius: 16rpx;
+  flex-shrink: 0;
 }
 
 .user-icon {
@@ -603,8 +604,6 @@ page {
   color: #4b5563;
   font-weight: 600;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .role-badge {
@@ -613,6 +612,7 @@ page {
   font-size: 22rpx;
   font-weight: 500;
   flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .role-badge.baby { background: #fce7f3; color: #ec4899; }
@@ -622,8 +622,10 @@ page {
 .user-info-right {
   display: flex;
   align-items: center;
-  gap: 16rpx;
+  gap: 12rpx;
   flex-shrink: 0;
+  flex-wrap: wrap;
+  margin-top: 12rpx;
 }
 
 .family-code-box {
