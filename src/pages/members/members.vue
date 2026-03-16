@@ -160,7 +160,7 @@ export default {
         
         await new Promise((resolve, reject) => {
           uni.request({
-            url: `${API_BASE_URL}/users/${member.id}`,
+            url: `${API_BASE_URL}/users?id=${member.id}`,
             method: 'PUT',
             data: { username: newName },
             header: {
