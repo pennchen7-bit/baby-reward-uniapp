@@ -841,13 +841,14 @@ page {
   background: rgba(255, 255, 255, 0.9);
   border-radius: 24rpx;
   padding: 24rpx;
-  margin-bottom: 24rpx;
+  margin-bottom: 0;
   box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.08);
   backdrop-filter: blur(10rpx);
-  height: 400rpx;
+  flex: 1;
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  min-height: 0;
 }
 
 .section-count {
@@ -864,9 +865,10 @@ page {
 }
 
 .history-list {
-  height: 400rpx;
+  flex: 1;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  min-height: 0;
 }
 
 .history-card {

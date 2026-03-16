@@ -251,9 +251,12 @@ page {
   background: linear-gradient(180deg, #f0abfc 0%, #818cf8 50%, #60a5fa 100%);
   padding-top: calc(100rpx + env(safe-area-inset-top));
   padding-bottom: calc(40rpx + env(safe-area-inset-bottom));
+  padding-left: 32rpx;
+  padding-right: 32rpx;
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  box-sizing: border-box;
 }
 
 /* 头部 */
@@ -394,6 +397,8 @@ page {
   display: flex;
   flex-direction: column;
   gap: 16rpx;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .request-left {

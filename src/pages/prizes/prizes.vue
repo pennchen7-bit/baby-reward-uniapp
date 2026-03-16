@@ -199,6 +199,8 @@ page {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  box-sizing: border-box;
+  max-width: 100%;
 }
 
 .header {
@@ -302,6 +304,8 @@ page {
   padding: 20rpx;
   margin-bottom: 16rpx;
   box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .prize-icon {
