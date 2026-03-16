@@ -191,9 +191,10 @@ page {
 }
 
 .list {
-  height: calc(100vh - 350rpx);
+  height: calc(100vh - 380rpx);
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  padding-bottom: 160rpx;
 }
 
 .loading {

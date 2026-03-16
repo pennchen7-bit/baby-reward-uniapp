@@ -849,7 +849,7 @@ page {
   background: rgba(255, 255, 255, 0.9);
   border-radius: 24rpx;
   padding: 24rpx;
-  margin-bottom: 0;
+  margin-bottom: 160rpx;
   box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.08);
   backdrop-filter: blur(10rpx);
   flex: 1;

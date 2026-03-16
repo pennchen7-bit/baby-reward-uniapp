@@ -363,8 +363,8 @@ page {
 
 /* 列表 */
 .list {
-  height: calc(100vh - 350rpx);
-  padding: 0 32rpx;
+  height: calc(100vh - 380rpx);
+  padding: 16rpx 32rpx;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   width: 100%;
