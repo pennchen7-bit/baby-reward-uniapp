@@ -72,7 +72,7 @@ export const requests = {
   approve: (id, data) => put(`/requests/${id}`, data),
   
   // 删除请求
-  delete: (id) => del('/requests', { id }),
+  delete: (id) => del(`/requests/${id}`),
 };
 
 /**
