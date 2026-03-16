@@ -92,8 +92,12 @@ export function del(url, data, options = {}) {
     const params = Object.keys(data)
       .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(data[key])}`)
       .join('&');
-    url = url + (url.includes('?') ? '&' : '?') + params;
+    // 检查 URL 是否已经有 query 参数
+    const separator = url.includes('?') ? '&' : '?';
+    url = url + separator + params;
   }
+  
+  console.log('DELETE request URL:', url);
   
   return request({
     url,

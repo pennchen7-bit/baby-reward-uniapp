@@ -192,7 +192,35 @@ export default {
         success: async (res) => {
           if (res.confirm) {
             try {
-              await prizes.delete(prize.id);
+              const userInfo = uni.getStorageSync('user_info');
+              const API_BASE_URL = 'https://baby-reward.clovey.site/api';
+              // 直接使用 uni.request 发送 DELETE 请求
+              await new Promise((resolve, reject) => {
+                uni.request({
+                  url: `${API_BASE_URL}/prizes?id=${prize.id}`,
+                  method: 'DELETE',
+                  header: {
+                    'Content-Type': 'application/json',
+                    ...(userInfo ? { 
+                      'X-User-Id': userInfo.id,
+                      'X-User-Role': userInfo.role,
+                      'X-Family-Id': userInfo.familyId || ''
+                    } : {}),
+                  },
+                  success: (res) => {
+                    if (res.statusCode === 200) {
+                      resolve(res.data);
+                    } else {
+                      reject(new Error(res.data?.error || '删除失败'));
+                    }
+                  },
+                  fail: (err) => {
+                    console.error('Delete error:', err);
+                    reject(new Error('网络错误'));
+                  }
+                });
+              });
+              
               uni.showToast({ title: '删除成功', icon: 'success' });
               this.fetchPrizes();
             } catch (err) {
