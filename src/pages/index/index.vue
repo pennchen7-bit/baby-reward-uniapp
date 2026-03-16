@@ -409,8 +409,10 @@ export default {
     },
     
     handleRedraw() {
-      // 清除结果，重新开始抽奖
+      // 清除结果，返回到抽奖申请状态
       this.result = null;
+      this.requestStatus = 'none';
+      this.activeRequest = null;
     },
     
     // 显示审批弹窗
