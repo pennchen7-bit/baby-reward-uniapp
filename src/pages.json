@@ -17,14 +17,6 @@
       }
     },
     {
-      "path": "pages/login/login",
-      "style": {
-        "navigationBarTitleText": "登录",
-        "navigationStyle": "custom",
-        "disableScroll": true
-      }
-    },
-    {
       "path": "pages/history/history",
       "style": {
         "navigationBarTitleText": "抽奖历史",
