@@ -1,6 +1,14 @@
 {
   "pages": [
     {
+      "path": "pages/admin/cleanup/cleanup",
+      "style": {
+        "navigationBarTitleText": "数据管理",
+        "navigationStyle": "custom",
+        "disableScroll": true
+      }
+    },
+    {
       "path": "pages/index/index",
       "style": {
         "navigationBarTitleText": "宝宝奖励计划",
