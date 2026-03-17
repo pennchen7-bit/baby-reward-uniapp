@@ -2,9 +2,9 @@
   <view class="container">
     <!-- 头部导航 -->
     <view class="nav-bar">
-      <view class="back-btn" @click="goBack">
+      <navigator class="back-btn" open-type="navigateBack" hover-class="back-btn-hover">
         <text class="back-icon">‹</text>
-      </view>
+      </navigator>
       <text class="nav-title">{{ isInvitee ? '加入家庭' : '邀请家人' }}</text>
       <view class="nav-placeholder"></view>
     </view>
@@ -489,11 +489,16 @@ export default {
 }
 
 .back-btn {
-  width: 60rpx;
-  height: 60rpx;
+  width: 80rpx;
+  height: 80rpx;
   display: flex;
   align-items: center;
   justify-content: center;
+  margin-left: -20rpx;
+}
+
+.back-btn-hover {
+  opacity: 0.7;
 }
 
 .back-icon {
