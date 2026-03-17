@@ -380,7 +380,7 @@ export default {
             familyName: res.family.name,
             familyCode: res.family.familyCode,
             role: this.inviteRole,
-            inviterName: '家庭成员', // 后端可以返回具体邀请人
+            inviterName: res.inviterName || '家庭成员',
           };
         } else {
           this.loadError = res.error || '邀请码无效';
