@@ -182,17 +182,11 @@
             <text class="result-desc">分享给微信好友，邀请 TA 加入</text>
           </view>
           
+          <!-- 分享按钮：使用 open-type 触发小程序分享面板 -->
           <button class="btn-share" open-type="share">
             <text class="share-icon">📤</text>
-            <text class="share-text">分享给微信好友</text>
+            <text class="share-text">选择好友分享</text>
           </button>
-          
-          <view class="share-timeline">
-            <button class="btn-timeline" @click="shareToTimeline">
-              <text class="timeline-icon">📋</text>
-              <text class="timeline-text">分享到朋友圈</text>
-            </button>
-          </view>
         </view>
         
         <!-- 使用说明 -->
@@ -204,15 +198,15 @@
           <view class="guide-list">
             <view class="guide-item">
               <view class="guide-step">1</view>
-              <text class="guide-text">点击"分享给微信好友"发送小程序卡片</text>
+              <text class="guide-text">点击"选择好友分享"发送邀请</text>
             </view>
             <view class="guide-item">
               <view class="guide-step">2</view>
-              <text class="guide-text">对方点击卡片后自动跳转到邀请页面</text>
+              <text class="guide-text">对方点击卡片后查看邀请详情</text>
             </view>
             <view class="guide-item">
               <view class="guide-step">3</view>
-              <text class="guide-text">微信登录后自动加入你的家庭</text>
+              <text class="guide-text">确认加入后自动加入你的家庭</text>
             </view>
           </view>
         </view>
@@ -390,9 +384,9 @@ export default {
         this.displayLink = `家庭码：${res.familyCode} | 角色：${this.role === 'parent' ? '家长' : '宝宝'}`;
         
         uni.showToast({
-          title: '生成成功，请点击下方按钮分享',
+          title: '生成成功，请选择分享好友',
           icon: 'success',
-          duration: 2000,
+          duration: 1500,
         });
       } catch (err) {
         uni.showToast({
@@ -462,13 +456,7 @@ export default {
       }
     },
     
-    shareToTimeline() {
-      uni.showModal({
-        title: '分享到朋友圈',
-        content: '点击右上角「...」，选择「分享到朋友圈」',
-        showCancel: false,
-      });
-    },
+
   },
 };
 </script>
@@ -922,29 +910,6 @@ export default {
 
 .share-icon {
   font-size: 40rpx;
-}
-
-.share-timeline {
-  text-align: center;
-}
-
-.btn-timeline {
-  background: rgba(16, 185, 129, 0.1);
-  color: #10b981;
-  border: 2rpx solid #10b981;
-  border-radius: 40rpx;
-  padding: 0 40rpx;
-  height: 80rpx;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12rpx;
-  font-size: 28rpx;
-  font-weight: 500;
-}
-
-.timeline-icon {
-  font-size: 32rpx;
 }
 
 /* 使用说明 */
