@@ -215,6 +215,15 @@
   </view>
 </template>
 
+<!-- 全局样式：确保页面可以滚动 -->
+<style>
+page {
+  height: 100vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+</style>
+
 <script>
 import { invite } from '@/api/index';
 import { checkAuth, isLoggedIn } from '@/utils/auth';
@@ -466,7 +475,7 @@ export default {
 .container {
   min-height: 100vh;
   background: linear-gradient(180deg, #f0abfc 0%, #818cf8 50%, #60a5fa 100%);
-  padding-bottom: calc(40rpx + env(safe-area-inset-bottom));
+  padding-bottom: calc(100rpx + env(safe-area-inset-bottom));
 }
 
 /* 导航栏 */
@@ -918,7 +927,9 @@ export default {
   backdrop-filter: blur(10rpx);
   border-radius: 24rpx;
   padding: 32rpx;
+  padding-bottom: 48rpx;
   border: 1rpx solid rgba(255, 255, 255, 0.3);
+  margin-bottom: 40rpx;
 }
 
 .guide-header {
