@@ -1,59 +1,132 @@
 <template>
   <view class="container">
-    <!-- 头部 -->
-    <view class="header">
-      <view class="back-btn" @click="goBack"><text class="back-icon">‹</text></view>
-      <text class="title">{{ isInvitee ? '🎉 加入家庭' : '📧 邀请家人' }}</text>
-      <text class="subtitle">{{ isInvitee ? '接受邀请加入家庭' : '邀请家人加入你的家庭' }}</text>
+    <!-- 头部导航 -->
+    <view class="nav-bar">
+      <view class="back-btn" @click="goBack">
+        <text class="back-icon">‹</text>
+      </view>
+      <text class="nav-title">{{ isInvitee ? '加入家庭' : '邀请家人' }}</text>
+      <view class="nav-placeholder"></view>
     </view>
 
     <!-- 被邀请人：显示邀请信息 -->
-    <view v-if="isInvitee" class="invitee-section">
+    <view v-if="isInvitee" class="invitee-container">
+      <!-- 邀请卡片 -->
       <view class="invite-card">
-        <text class="invite-title">🎁 你收到一个邀请</text>
-        <view class="invite-info">
-          <text class="invite-label">家庭码</text>
-          <text class="invite-code">{{ inviteCode || '加载中...' }}</text>
+        <view class="card-header">
+          <text class="card-icon">🎉</text>
+          <text class="card-title">邀请你加入</text>
         </view>
-        <view class="invite-info">
-          <text class="invite-label">邀请角色</text>
-          <text class="invite-role">{{ inviteRole === 'parent' ? '👨‍👩‍👧 家长' : '👶 宝宝' }}</text>
+        
+        <!-- 加载状态 -->
+        <view v-if="loading" class="loading-state">
+          <text class="loading-text">正在加载邀请信息...</text>
+        </view>
+        
+        <!-- 邀请详情 -->
+        <view v-else-if="inviteData" class="invite-details">
+          <!-- 家庭信息 -->
+          <view class="detail-section">
+            <view class="detail-label">🏠 加入的家庭</view>
+            <view class="detail-value highlight">{{ inviteData.familyName }}</view>
+          </view>
+          
+          <!-- 分隔线 -->
+          <view class="divider"></view>
+          
+          <!-- 邀请角色 -->
+          <view class="detail-section">
+            <view class="detail-label">🎯 你的角色</view>
+            <view class="detail-value">
+              <view class="role-tag" :class="inviteData.role">
+                <text class="role-icon">{{ inviteData.role === 'parent' ? '👨‍👩‍👧' : '👶' }}</text>
+                <text class="role-text">{{ inviteData.role === 'parent' ? '家长' : '宝宝' }}</text>
+              </view>
+            </view>
+          </view>
+          
+          <!-- 分隔线 -->
+          <view class="divider"></view>
+          
+          <!-- 邀请人 -->
+          <view class="detail-section">
+            <view class="detail-label">👤 邀请人</view>
+            <view class="detail-value">{{ inviteData.inviterName || '家庭成员' }}</view>
+          </view>
+          
+          <!-- 分隔线 -->
+          <view class="divider"></view>
+          
+          <!-- 家庭码 -->
+          <view class="detail-section">
+            <view class="detail-label">🔑 家庭码</view>
+            <view class="family-code-display">{{ inviteData.familyCode }}</view>
+          </view>
+        </view>
+        
+        <!-- 错误状态 -->
+        <view v-else-if="loadError" class="error-state">
+          <text class="error-icon">❌</text>
+          <text class="error-text">{{ loadError }}</text>
         </view>
       </view>
       
-      <button 
-        class="btn-join"
-        :disabled="joining"
-        @click="handleJoin"
-      >
-        {{ joining ? '加入中...' : '✅ 确认加入' }}
-      </button>
+      <!-- 确认加入按钮 -->
+      <view class="action-section">
+        <button 
+          class="btn-join"
+          :class="{ 'btn-disabled': joining || !inviteData }"
+          :disabled="joining || !inviteData"
+          @click="handleJoin"
+        >
+          <text class="btn-icon">{{ joining ? '⏳' : '✅' }}</text>
+          <text class="btn-text">{{ joining ? '加入中...' : '确认加入' }}</text>
+        </button>
+      </view>
       
-      <view class="tips">
-        <text class="tips-title">💡 说明</text>
-        <text class="tips-text">1. 点击"确认加入"后自动加入该家庭</text>
-        <text class="tips-text">2. 如果未登录，将自动跳转到登录页</text>
-        <text class="tips-text">3. 登录后自动加入，无需再次操作</text>
+      <!-- 说明区域 -->
+      <view class="info-section">
+        <view class="info-card">
+          <view class="info-header">
+            <text class="info-icon">💡</text>
+            <text class="info-title">温馨提示</text>
+          </view>
+          <view class="info-list">
+            <view class="info-item">
+              <text class="info-dot">•</text>
+              <text class="info-text">点击"确认加入"后自动加入该家庭</text>
+            </view>
+            <view class="info-item">
+              <text class="info-dot">•</text>
+              <text class="info-text">如果未登录，将跳转到登录页</text>
+            </view>
+            <view class="info-item">
+              <text class="info-dot">•</text>
+              <text class="info-text">加入后可在"家庭成员"页面查看其他成员</text>
+            </view>
+          </view>
+        </view>
       </view>
     </view>
 
     <!-- 管理员：显示生成邀请界面 -->
-    <view v-else-if="familyCode">
+    <view v-else-if="familyCode" class="inviter-container">
       <!-- 家庭信息卡片 -->
       <view class="family-card">
-        <view class="family-info">
-          <text class="family-label">当前家庭</text>
-          <text class="family-name">{{ familyName }}</text>
-          <view class="family-code-box">
-            <text class="family-code-label">家庭码</text>
-            <text class="family-code-value">{{ familyCode }}</text>
-          </view>
+        <view class="family-header">
+          <text class="family-icon">🏠</text>
+          <text class="family-title">你的家庭</text>
+        </view>
+        <view class="family-name-display">{{ familyName }}</view>
+        <view class="family-code-wrapper">
+          <text class="code-label">家庭码</text>
+          <text class="code-value">{{ familyCode }}</text>
         </view>
       </view>
 
       <!-- 选择角色 -->
       <view class="role-section">
-        <text class="section-title">选择邀请角色</text>
+        <text class="section-title">邀请他作为</text>
         
         <view class="role-options">
           <view 
@@ -61,9 +134,12 @@
             :class="{ active: role === 'parent' }"
             @click="role = 'parent'"
           >
-            <text class="role-icon">👨‍👩‍👧</text>
-            <text class="role-name">家长</text>
-            <text class="role-desc">可以审批和管理</text>
+            <view class="role-option-content">
+              <text class="role-icon">👨‍👩‍👧</text>
+              <text class="role-name">家长</text>
+              <text class="role-desc">审批和管理权限</text>
+            </view>
+            <view class="role-check" v-if="role === 'parent'">✓</view>
           </view>
           
           <view 
@@ -71,40 +147,74 @@
             :class="{ active: role === 'baby' }"
             @click="role = 'baby'"
           >
-            <text class="role-icon">👶</text>
-            <text class="role-name">儿童</text>
-            <text class="role-desc">可以抽奖和查看历史</text>
+            <view class="role-option-content">
+              <text class="role-icon">👶</text>
+              <text class="role-name">宝宝</text>
+              <text class="role-desc">抽奖和查看历史</text>
+            </view>
+            <view class="role-check" v-if="role === 'baby'">✓</view>
           </view>
         </view>
       </view>
 
       <!-- 生成邀请 -->
-      <button 
-        class="btn-generate"
-        :disabled="generating"
-        @click="handleGenerate"
-      >
-        {{ generating ? '生成中...' : '生成邀请链接' }}
-      </button>
+      <view class="action-section">
+        <button 
+          class="btn-generate"
+          :class="{ 'btn-disabled': generating }"
+          :disabled="generating"
+          @click="handleGenerate"
+        >
+          <text class="btn-icon">{{ generating ? '⏳' : '✨' }}</text>
+          <text class="btn-text">{{ generating ? '生成中...' : '生成邀请链接' }}</text>
+        </button>
+      </view>
 
       <!-- 邀请结果 -->
       <view v-if="inviteLink" class="invite-result">
-        <text class="result-title">✅ 邀请链接已生成</text>
-        
-        <view class="invite-info">
-          <text class="invite-info-text">{{ displayLink }}</text>
+        <view class="result-card">
+          <view class="result-header">
+            <text class="result-icon">✅</text>
+            <text class="result-title">邀请链接已生成</text>
+          </view>
+          
+          <view class="result-info">
+            <text class="result-desc">分享给微信好友，邀请 TA 加入</text>
+          </view>
+          
+          <button class="btn-share" open-type="share">
+            <text class="share-icon">📤</text>
+            <text class="share-text">分享给微信好友</text>
+          </button>
+          
+          <view class="share-timeline">
+            <button class="btn-timeline" @click="shareToTimeline">
+              <text class="timeline-icon">📋</text>
+              <text class="timeline-text">分享到朋友圈</text>
+            </button>
+          </view>
         </view>
         
-        <button class="btn-share" open-type="share">
-          <text class="share-icon">📤</text>
-          <text class="share-text">分享给微信好友</text>
-        </button>
-        
-        <view class="tips">
-          <text class="tips-title">💡 使用说明</text>
-          <text class="tips-text">1. 点击"分享给微信好友"发送小程序卡片</text>
-          <text class="tips-text">2. 对方点击卡片后自动跳转到登录页</text>
-          <text class="tips-text">3. 微信登录后自动加入你的家庭</text>
+        <!-- 使用说明 -->
+        <view class="guide-section">
+          <view class="guide-header">
+            <text class="guide-icon">📖</text>
+            <text class="guide-title">使用说明</text>
+          </view>
+          <view class="guide-list">
+            <view class="guide-item">
+              <view class="guide-step">1</view>
+              <text class="guide-text">点击"分享给微信好友"发送小程序卡片</text>
+            </view>
+            <view class="guide-item">
+              <view class="guide-step">2</view>
+              <text class="guide-text">对方点击卡片后自动跳转到邀请页面</text>
+            </view>
+            <view class="guide-item">
+              <view class="guide-step">3</view>
+              <text class="guide-text">微信登录后自动加入你的家庭</text>
+            </view>
+          </view>
         </view>
       </view>
     </view>
@@ -113,21 +223,29 @@
 
 <script>
 import { invite } from '@/api/index';
-import { checkAuth } from '@/utils/auth';
+import { checkAuth, isLoggedIn } from '@/utils/auth';
 
 export default {
   data() {
     return {
+      // 邀请方数据
       familyName: '',
       familyCode: '',
       role: 'parent',
       generating: false,
       inviteLink: '',
-      // 新字段
-      isInvitee: false,  // 是否是被邀请人
-      inviteCode: '',    // 邀请码
-      inviteRole: 'parent',  // 邀请角色
-      joining: false,    // 加入中
+      displayLink: '',
+      
+      // 被邀请方数据
+      isInvitee: false,
+      inviteCode: '',
+      inviteRole: 'parent',
+      joining: false,
+      
+      // 邀请详情
+      loading: false,
+      loadError: '',
+      inviteData: null,
     };
   },
   
@@ -136,11 +254,15 @@ export default {
     
     // 检查是否有邀请码参数（被邀请人）
     if (options && options.code) {
-      // 被邀请人：显示接受邀请界面（不需要权限验证）
       this.isInvitee = true;
       this.inviteCode = options.code;
       this.inviteRole = options.role || 'parent';
-      console.log('被邀请人，code:', this.inviteCode, 'role:', this.inviteRole);
+      
+      // 自动检查是否已加入该家庭
+      this.checkAlreadyJoined();
+      
+      // 加载邀请详情
+      this.loadInviteDetails();
     } else {
       // 管理员：显示生成邀请界面（需要权限验证）
       if (!checkAuth('/pages/invite/invite', (role) => {
@@ -157,12 +279,11 @@ export default {
       if (user) {
         this.familyName = user.familyName || '';
         this.familyCode = user.familyCode || '';
-        console.log('管理员，familyName:', this.familyName, 'familyCode:', this.familyCode);
       }
     }
   },
   
-  // 小程序分享配置（动态更新）
+  // 小程序分享配置
   onShareAppMessage() {
     if (this.familyCode) {
       return {
@@ -194,18 +315,78 @@ export default {
     goBack() {
       uni.navigateBack();
     },
+    
+    // 检查是否已加入该家庭
+    async checkAlreadyJoined() {
+      const userInfo = uni.getStorageSync('user_info');
+      
+      if (userInfo && userInfo.id) {
+        // 已登录，检查是否已在目标家庭
+        try {
+          // 验证邀请码获取家庭信息
+          const res = await invite.verify(this.inviteCode);
+          
+          if (res.success && res.family) {
+            // 检查当前用户是否已在该家庭
+            if (userInfo.familyId === res.family.id) {
+              // 已在该家庭，直接跳转到首页
+              uni.showToast({
+                title: '你已在这个家庭中',
+                icon: 'success',
+                duration: 1500,
+              });
+              
+              setTimeout(() => {
+                uni.reLaunch({
+                  url: '/pages/index/index',
+                });
+              }, 1500);
+              
+              return true;
+            }
+          }
+        } catch (err) {
+          console.error('Check joined error:', err);
+        }
+      }
+      
+      return false;
+    },
+    
+    // 加载邀请详情
+    async loadInviteDetails() {
+      this.loading = true;
+      this.loadError = '';
+      
+      try {
+        const res = await invite.verify(this.inviteCode);
+        
+        if (res.success) {
+          this.inviteData = {
+            familyName: res.family.name,
+            familyCode: res.family.familyCode,
+            role: this.inviteRole,
+            inviterName: '家庭成员', // 后端可以返回具体邀请人
+          };
+        } else {
+          this.loadError = res.error || '邀请码无效';
+        }
+      } catch (err) {
+        console.error('Load invite details error:', err);
+        this.loadError = '加载失败，请检查网络';
+      } finally {
+        this.loading = false;
+      }
+    },
 
     async handleGenerate() {
       this.generating = true;
       
       try {
         const res = await invite.generate({ role: this.role });
-        // 保存家庭码和名称
         this.familyCode = res.familyCode;
         this.familyName = res.familyName;
-        // 保存完整的邀请链接（小程序路径）
         this.inviteLink = res.invitePath || `/pages/invite/invite?code=${res.familyCode}`;
-        // 同时保存用于显示的短链接
         this.displayLink = `家庭码：${res.familyCode} | 角色：${this.role === 'parent' ? '家长' : '宝宝'}`;
         
         uni.showToast({
@@ -226,9 +407,7 @@ export default {
     
     // 被邀请人：确认加入
     async handleJoin() {
-      console.log('handleJoin called, inviteCode:', this.inviteCode, 'inviteRole:', this.inviteRole);
-      
-      if (!this.inviteCode) {
+      if (!this.inviteCode || !this.inviteData) {
         uni.showToast({ title: '邀请码无效', icon: 'none' });
         return;
       }
@@ -236,27 +415,15 @@ export default {
       this.joining = true;
       
       try {
-        // 检查是否已登录
         const userInfo = uni.getStorageSync('user_info');
-        console.log('userInfo:', userInfo);
         
         if (userInfo && userInfo.wechatOpenid) {
-          // 已登录：直接调用加入接口
-          console.log('Calling invite.join with:', {
-            code: this.inviteCode,
-            wechatOpenid: userInfo.wechatOpenid,
-            username: userInfo.username,
-          });
-          
           const res = await invite.join(this.inviteCode, {
             wechatOpenid: userInfo.wechatOpenid,
             username: userInfo.username,
           });
           
-          console.log('Join result:', res);
-          
           if (res.success) {
-            // 更新本地用户信息
             uni.setStorageSync('user_info', res.user);
             
             uni.showToast({
@@ -265,14 +432,11 @@ export default {
               duration: 2000,
             });
             
-            // 跳转到首页
             setTimeout(() => {
               uni.reLaunch({ url: '/pages/index/index' });
             }, 2000);
           }
         } else {
-          // 未登录：跳转到登录页，带上邀请码
-          console.log('Not logged in, redirect to login');
           uni.setStorageSync('invite_code', this.inviteCode);
           uni.setStorageSync('invite_role', this.inviteRole);
           
@@ -298,193 +462,370 @@ export default {
       }
     },
     
-    handleShare() {
-      if (this.inviteLink) {
-        // 生成小程序 URL Scheme（可以打开小程序的链接）
-        const urlScheme = `https://your-app-id.page.link?url=${encodeURIComponent(this.inviteLink)}`;
-        
-        uni.setClipboardData({
-          data: `点击链接加入我的家庭：${urlScheme}\n${this.displayLink}`,
-          success: () => {
-            uni.showModal({
-              title: '已复制',
-              content: '邀请链接已复制，可以发送给微信好友',
-              showCancel: false,
-            });
-          },
-        });
-      }
-    },
-    
-    // 分享给好友
-    onShareAppMessage() {
-      return {
-        title: `📧 邀请你加入${this.familyName}`,
-        path: `/pages/invite/invite?code=${this.familyCode}&role=${this.role}`,
-        imageUrl: '', // 使用默认封面图
-      };
-    },
-    
-    // 分享到朋友圈
-    onShareTimeline() {
-      return {
-        title: `📧 邀请加入${this.familyName}`,
-        query: `code=${this.familyCode}&role=${this.role}`,
-      };
-    },
-    
-    handleCopy() {
-      if (this.inviteLink) {
-        uni.setClipboardData({
-          data: this.inviteLink,
-          success: () => {
-            uni.showToast({
-              title: '已复制',
-              icon: 'success',
-            });
-          },
-        });
-      }
+    shareToTimeline() {
+      uni.showModal({
+        title: '分享到朋友圈',
+        content: '点击右上角「...」，选择「分享到朋友圈」',
+        showCancel: false,
+      });
     },
   },
 };
 </script>
 
 <style scoped>
+/* 容器 */
 .container {
-  height: 100vh;
+  min-height: 100vh;
   background: linear-gradient(180deg, #f0abfc 0%, #818cf8 50%, #60a5fa 100%);
-  overflow: hidden;
-  padding: calc(100rpx + env(safe-area-inset-top)) 40rpx calc(40rpx + env(safe-area-inset-bottom));
+  padding-bottom: calc(40rpx + env(safe-area-inset-bottom));
 }
 
-/* 头部 */
+/* 导航栏 */
+.nav-bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: calc(20rpx + env(safe-area-inset-top)) 32rpx 20rpx;
+}
+
 .back-btn {
-  position: absolute;
-  left: 32rpx;
-  top: 50%;
-  transform: translateY(-50%);
   width: 60rpx;
   height: 60rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 10;
 }
 
 .back-icon {
   font-size: 64rpx;
   color: #ffffff;
-  font-weight: 300;
   line-height: 1;
 }
 
-.back-btn:active {
-  opacity: 0.7;
-}
-
-.header {
-  position: relative;
-  text-align: center;
-  margin-bottom: 40rpx;
-  padding: 20rpx 0;
-}
-
-.title {
-  font-size: 40rpx;
-  font-weight: bold;
+.nav-title {
+  font-size: 34rpx;
+  font-weight: 600;
   color: #ffffff;
-  display: block;
-  margin-bottom: 8rpx;
-  text-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.15);
 }
 
-.subtitle {
-  font-size: 24rpx;
-  color: rgba(255, 255, 255, 0.9);
-  display: block;
+.nav-placeholder {
+  width: 60rpx;
 }
 
-/* 家庭信息卡片 */
-.family-card {
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(10rpx);
-  border-radius: 24rpx;
+/* 被邀请人容器 */
+.invitee-container {
   padding: 32rpx;
+}
+
+/* 邀请卡片 */
+.invite-card {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 32rpx;
+  padding: 40rpx 32rpx;
   margin-bottom: 32rpx;
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.1);
 }
 
-.family-info {
-  text-align: center;
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16rpx;
+  margin-bottom: 40rpx;
 }
 
-.family-label {
-  display: block;
-  font-size: 24rpx;
-  color: #6b7280;
-  margin-bottom: 8rpx;
+.card-icon {
+  font-size: 56rpx;
 }
 
-.family-name {
-  display: block;
+.card-title {
   font-size: 36rpx;
   font-weight: bold;
   color: #1f2937;
+}
+
+/* 加载/错误状态 */
+.loading-state, .error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 60rpx 0;
+}
+
+.loading-text {
+  font-size: 28rpx;
+  color: #6b7280;
+  margin-top: 20rpx;
+}
+
+.error-icon {
+  font-size: 64rpx;
   margin-bottom: 16rpx;
 }
 
-.family-code-box {
-  display: inline-block;
-  background: linear-gradient(135deg, #f0abfc 0%, #818cf8 100%);
-  padding: 12rpx 28rpx;
-  border-radius: 24rpx;
+.error-text {
+  font-size: 28rpx;
+  color: #ef4444;
 }
 
-.family-code-label {
-  display: block;
-  font-size: 20rpx;
-  color: rgba(255, 255, 255, 0.9);
-  margin-bottom: 4rpx;
+/* 邀请详情 */
+.invite-details {
+  display: flex;
+  flex-direction: column;
 }
 
-.family-code-value {
-  display: block;
-  font-size: 32rpx;
+.detail-section {
+  padding: 24rpx 0;
+}
+
+.detail-label {
+  font-size: 24rpx;
+  color: #6b7280;
+  margin-bottom: 12rpx;
+}
+
+.detail-value {
+  font-size: 30rpx;
+  color: #1f2937;
+  font-weight: 500;
+}
+
+.detail-value.highlight {
+  font-size: 36rpx;
   font-weight: bold;
-  color: #ffffff;
-  letter-spacing: 4rpx;
+  color: #7c3aed;
 }
 
-/* 角色选择 */
-.role-section {
-  background: rgba(255, 255, 255, 0.9);
+.divider {
+  height: 1rpx;
+  background: linear-gradient(to right, transparent, #e5e7eb, transparent);
+  margin: 8rpx 0;
+}
+
+/* 角色标签 */
+.role-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 12rpx;
+  padding: 12rpx 24rpx;
+  border-radius: 24rpx;
+  font-size: 28rpx;
+  font-weight: 500;
+}
+
+.role-tag.parent {
+  background: linear-gradient(135deg, #dcfce7 0%, #86efac 100%);
+  color: #166534;
+}
+
+.role-tag.baby {
+  background: linear-gradient(135deg, #fce7f3 0%, #f9a8d4 100%);
+  color: #9d174d;
+}
+
+.role-icon {
+  font-size: 32rpx;
+}
+
+/* 家庭码显示 */
+.family-code-display {
+  font-family: monospace;
+  font-size: 40rpx;
+  font-weight: bold;
+  color: #7c3aed;
+  letter-spacing: 8rpx;
+  background: linear-gradient(135deg, #f0abfc 0%, #818cf8 100%);
+  padding: 16rpx 32rpx;
+  border-radius: 20rpx;
+  display: inline-block;
+}
+
+/* 确认按钮区域 */
+.action-section {
+  margin-bottom: 32rpx;
+}
+
+.btn-join, .btn-generate {
+  width: 100%;
+  height: 100rpx;
+  border-radius: 50rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16rpx;
+  font-size: 34rpx;
+  font-weight: 600;
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.15);
+}
+
+.btn-join {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: #ffffff;
+}
+
+.btn-generate {
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+  color: #ffffff;
+}
+
+.btn-disabled {
+  opacity: 0.6;
+}
+
+.btn-icon {
+  font-size: 40rpx;
+}
+
+/* 说明区域 */
+.info-section {
+  margin-top: 24rpx;
+}
+
+.info-card {
+  background: rgba(255, 255, 255, 0.2);
   backdrop-filter: blur(10rpx);
   border-radius: 24rpx;
   padding: 32rpx;
+  border: 1rpx solid rgba(255, 255, 255, 0.3);
+}
+
+.info-header {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  margin-bottom: 24rpx;
+}
+
+.info-icon {
+  font-size: 32rpx;
+}
+
+.info-title {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.info-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.info-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12rpx;
+}
+
+.info-dot {
+  font-size: 24rpx;
+  color: rgba(255, 255, 255, 0.8);
+  flex-shrink: 0;
+}
+
+.info-text {
+  font-size: 26rpx;
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.6;
+}
+
+/* 邀请方容器 */
+.inviter-container {
+  padding: 32rpx;
+}
+
+/* 家庭卡片 */
+.family-card {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 32rpx;
+  padding: 40rpx 32rpx;
   margin-bottom: 32rpx;
+  text-align: center;
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.1);
+}
+
+.family-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12rpx;
+  margin-bottom: 16rpx;
+}
+
+.family-icon {
+  font-size: 40rpx;
+}
+
+.family-title {
+  font-size: 28rpx;
+  color: #6b7280;
+}
+
+.family-name-display {
+  font-size: 40rpx;
+  font-weight: bold;
+  color: #1f2937;
+  margin-bottom: 24rpx;
+}
+
+.family-code-wrapper {
+  display: inline-block;
+  background: linear-gradient(135deg, #f0abfc 0%, #818cf8 100%);
+  padding: 16rpx 40rpx;
+  border-radius: 24rpx;
+}
+
+.code-label {
+  display: block;
+  font-size: 22rpx;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 8rpx;
+}
+
+.code-value {
+  display: block;
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #ffffff;
+  letter-spacing: 6rpx;
+}
+
+/* 角色选择区域 */
+.role-section {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 32rpx;
+  padding: 40rpx 32rpx;
+  margin-bottom: 32rpx;
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.1);
 }
 
 .section-title {
   display: block;
-  font-size: 28rpx;
+  font-size: 30rpx;
   font-weight: 600;
   color: #1f2937;
-  margin-bottom: 24rpx;
   text-align: center;
+  margin-bottom: 32rpx;
 }
 
 .role-options {
   display: flex;
+  flex-direction: column;
   gap: 20rpx;
 }
 
 .role-option {
-  flex: 1;
+  position: relative;
   background: rgba(255, 255, 255, 0.6);
-  border: 2rpx solid rgba(255, 255, 255, 0.5);
-  border-radius: 20rpx;
-  padding: 24rpx;
-  text-align: center;
+  border: 3rpx solid rgba(255, 255, 255, 0.5);
+  border-radius: 24rpx;
+  padding: 32rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   transition: all 0.3s;
 }
 
@@ -494,179 +835,174 @@ export default {
   box-shadow: 0 4rpx 16rpx rgba(240, 171, 252, 0.3);
 }
 
+.role-option-content {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+}
+
 .role-icon {
-  display: block;
   font-size: 56rpx;
-  margin-bottom: 12rpx;
 }
 
 .role-name {
-  display: block;
-  font-size: 30rpx;
+  font-size: 32rpx;
   font-weight: 600;
   color: #1f2937;
-  margin-bottom: 6rpx;
 }
 
 .role-desc {
-  display: block;
-  font-size: 20rpx;
+  font-size: 24rpx;
   color: #6b7280;
+  margin-left: 16rpx;
 }
 
-/* 生成按钮 */
-.btn-generate {
-  width: 100%;
-  height: 96rpx;
-  background: #ffffff;
-  border-radius: 48rpx;
-  font-size: 32rpx;
-  font-weight: 600;
-  color: #07c160;
-  margin-bottom: 32rpx;
-  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.1);
-}
-
-.btn-generate:disabled {
-  opacity: 0.7;
+.role-check {
+  font-size: 40rpx;
+  color: #10b981;
+  font-weight: bold;
 }
 
 /* 邀请结果 */
 .invite-result {
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(10rpx);
-  border-radius: 24rpx;
-  padding: 32rpx;
+  margin-top: 24rpx;
+}
+
+.result-card {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 32rpx;
+  padding: 40rpx 32rpx;
+  margin-bottom: 24rpx;
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.1);
+}
+
+.result-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16rpx;
+  margin-bottom: 20rpx;
+}
+
+.result-icon {
+  font-size: 48rpx;
 }
 
 .result-title {
-  display: block;
-  font-size: 30rpx;
+  font-size: 32rpx;
   font-weight: bold;
   color: #059669;
-  margin-bottom: 24rpx;
+}
+
+.result-info {
   text-align: center;
+  margin-bottom: 32rpx;
 }
 
-.invite-info {
-  background: rgba(240, 171, 252, 0.15);
-  border-radius: 16rpx;
-  padding: 20rpx;
-  margin-bottom: 24rpx;
-}
-
-.invite-info-text {
-  display: block;
+.result-desc {
   font-size: 26rpx;
-  color: #4b5563;
-  text-align: center;
-  line-height: 1.8;
+  color: #6b7280;
 }
 
 .btn-share {
   width: 100%;
   height: 96rpx;
-  background: #07c160;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
   color: #ffffff;
   border-radius: 48rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12rpx;
+  gap: 16rpx;
   font-size: 32rpx;
   font-weight: 600;
-  margin-bottom: 16rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 8rpx 24rpx rgba(16, 185, 129, 0.3);
 }
 
 .share-icon {
-  font-size: 36rpx;
+  font-size: 40rpx;
 }
 
-.share-text {
-  display: block;
+.share-timeline {
+  text-align: center;
 }
 
 .btn-timeline {
-  width: 100%;
-  height: 80rpx;
-  background: rgba(7, 193, 96, 0.1);
-  color: #07c160;
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+  border: 2rpx solid #10b981;
   border-radius: 40rpx;
-  display: flex;
+  padding: 0 40rpx;
+  height: 80rpx;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 10rpx;
+  gap: 12rpx;
   font-size: 28rpx;
   font-weight: 500;
-  margin-bottom: 24rpx;
-  border: 2rpx solid #07c160;
 }
 
 .timeline-icon {
   font-size: 32rpx;
 }
 
-.timeline-text {
-  display: block;
+/* 使用说明 */
+.guide-section {
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10rpx);
+  border-radius: 24rpx;
+  padding: 32rpx;
+  border: 1rpx solid rgba(255, 255, 255, 0.3);
 }
 
-.copy-section {
+.guide-header {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
   margin-bottom: 24rpx;
 }
 
-.copy-label {
-  display: block;
-  font-size: 24rpx;
-  color: #6b7280;
-  margin-bottom: 12rpx;
+.guide-icon {
+  font-size: 32rpx;
 }
 
-.copy-box {
+.guide-title {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.guide-list {
   display: flex;
-  gap: 12rpx;
+  flex-direction: column;
+  gap: 20rpx;
+}
+
+.guide-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 16rpx;
+}
+
+.guide-step {
+  width: 40rpx;
+  height: 40rpx;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  display: flex;
   align-items: center;
-}
-
-.copy-text {
-  flex: 1;
-  font-size: 22rpx;
-  color: #6b7280;
-  background: rgba(255, 255, 255, 0.6);
-  padding: 14rpx 18rpx;
-  border-radius: 12rpx;
-  word-break: break-all;
-}
-
-.btn-copy {
-  padding: 0 28rpx;
-  height: 64rpx;
-  background: rgba(255, 255, 255, 0.8);
-  color: #374151;
-  border-radius: 12rpx;
-  font-size: 26rpx;
-  font-weight: 500;
+  justify-content: center;
+  font-size: 24rpx;
+  font-weight: bold;
+  color: #ffffff;
   flex-shrink: 0;
 }
 
-/* 提示 */
-.tips {
-  background: rgba(255, 255, 255, 0.5);
-  border-radius: 16rpx;
-  padding: 20rpx;
-}
-
-.tips-title {
-  display: block;
-  font-size: 24rpx;
-  font-weight: 600;
-  color: #4b5563;
-  margin-bottom: 12rpx;
-}
-
-.tips-text {
-  display: block;
-  font-size: 20rpx;
-  color: #6b7280;
-  line-height: 1.8;
+.guide-text {
+  font-size: 26rpx;
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.6;
+  padding-top: 4rpx;
 }
 </style>
