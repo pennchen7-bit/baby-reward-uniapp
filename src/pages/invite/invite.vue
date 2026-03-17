@@ -484,7 +484,8 @@ export default {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: calc(20rpx + env(safe-area-inset-top)) 32rpx 20rpx;
+  padding: calc(40rpx + env(safe-area-inset-top)) 32rpx 32rpx;
+  margin-top: 20rpx;
 }
 
 .back-btn {
@@ -513,7 +514,7 @@ export default {
 
 /* 被邀请人容器 */
 .invitee-container {
-  padding: 32rpx;
+  padding: 20rpx 32rpx 32rpx;
 }
 
 /* 邀请卡片 */
@@ -731,7 +732,7 @@ export default {
 
 /* 邀请方容器 */
 .inviter-container {
-  padding: 32rpx;
+  padding: 20rpx 32rpx 32rpx;
 }
 
 /* 家庭卡片 */
