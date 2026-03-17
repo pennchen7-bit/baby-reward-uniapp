@@ -54,6 +54,7 @@
 
 <script>
 import { users, families } from '@/api/index';
+import { checkAuth } from '@/utils/auth';
 
 export default {
   data() {
@@ -65,6 +66,16 @@ export default {
   },
   
   onLoad() {
+    // 权限验证
+    if (!checkAuth('/pages/members/members', (role) => {
+      uni.showToast({
+        title: '仅管理员和家长可访问',
+        icon: 'none',
+      });
+    })) {
+      return;
+    }
+    
     this.userInfo = uni.getStorageSync('user_info');
     if (this.userInfo) {
       this.familyCode = this.userInfo.familyCode;

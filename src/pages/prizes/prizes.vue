@@ -97,6 +97,7 @@
 
 <script>
 import { prizes } from '@/api/index';
+import { checkAuth } from '@/utils/auth';
 
 // 默认推荐奖品（小朋友喜欢的）
 const DEFAULT_RECOMMENDATIONS = [
@@ -125,6 +126,16 @@ export default {
   },
   
   onLoad() {
+    // 权限验证
+    if (!checkAuth('/pages/prizes/prizes', (role) => {
+      uni.showToast({
+        title: '仅管理员和家长可访问',
+        icon: 'none',
+      });
+    })) {
+      return;
+    }
+    
     this.fetchPrizes();
   },
   

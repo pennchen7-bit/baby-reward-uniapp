@@ -113,6 +113,7 @@
 
 <script>
 import { invite } from '@/api/index';
+import { checkAuth } from '@/utils/auth';
 
 export default {
   data() {
@@ -135,13 +136,22 @@ export default {
     
     // 检查是否有邀请码参数（被邀请人）
     if (options && options.code) {
-      // 被邀请人：显示接受邀请界面
+      // 被邀请人：显示接受邀请界面（不需要权限验证）
       this.isInvitee = true;
       this.inviteCode = options.code;
       this.inviteRole = options.role || 'parent';
       console.log('被邀请人，code:', this.inviteCode, 'role:', this.inviteRole);
     } else {
-      // 管理员：显示生成邀请界面
+      // 管理员：显示生成邀请界面（需要权限验证）
+      if (!checkAuth('/pages/invite/invite', (role) => {
+        uni.showToast({
+          title: '仅管理员和家长可访问',
+          icon: 'none',
+        });
+      })) {
+        return;
+      }
+      
       this.isInvitee = false;
       const user = uni.getStorageSync('user_info');
       if (user) {

@@ -107,7 +107,34 @@ export const families = {
  */
 export const users = {
   // 获取用户列表
-  list: () => get('/users'),
+  list: () => {
+    const userInfo = uni.getStorageSync('user_info');
+    return new Promise((resolve, reject) => {
+      uni.request({
+        url: API_BASE_URL + '/users',
+        method: 'GET',
+        header: {
+          'Content-Type': 'application/json',
+          ...(userInfo ? { 
+            'X-User-Id': userInfo.id,
+            'X-User-Role': userInfo.role,
+            'X-Family-Id': userInfo.familyId || ''
+          } : {}),
+        },
+        success: (res) => {
+          if (res.statusCode === 200) {
+            resolve(res.data);
+          } else {
+            reject(new Error(res.data?.error || '获取失败'));
+          }
+        },
+        fail: (err) => {
+          console.error('Get users error:', err);
+          reject(new Error('网络错误'));
+        }
+      });
+    });
+  },
   
   // 创建用户
   create: (data) => post('/users', data),

@@ -133,6 +133,16 @@ export default {
   },
   
   onLoad() {
+    // 权限验证
+    if (!checkAuth('/pages/requests/requests', (role) => {
+      uni.showToast({
+        title: '仅管理员和家长可访问',
+        icon: 'none',
+      });
+    })) {
+      return;
+    }
+    
     this.userInfo = uni.getStorageSync('user_info');
     this.fetchRequests();
     
