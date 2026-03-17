@@ -475,7 +475,7 @@ export default {
 .container {
   min-height: 100vh;
   background: linear-gradient(180deg, #f0abfc 0%, #818cf8 50%, #60a5fa 100%);
-  padding-top: calc(40rpx + env(safe-area-inset-top));
+  padding-top: calc(88rpx + env(safe-area-inset-top));
   padding-bottom: calc(100rpx + env(safe-area-inset-bottom));
 }
 
