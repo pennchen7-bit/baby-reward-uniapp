@@ -2,9 +2,9 @@
   <view class="container">
     <!-- 头部导航 -->
     <view class="nav-bar">
-      <navigator class="back-btn" open-type="navigateBack" hover-class="back-btn-hover">
+      <view class="back-btn" @click="handleBack" hover-class="back-btn-hover">
         <text class="back-icon">‹</text>
-      </navigator>
+      </view>
       <text class="nav-title">{{ isInvitee ? '加入家庭' : '邀请家人' }}</text>
       <view class="nav-placeholder"></view>
     </view>
@@ -315,8 +315,19 @@ export default {
   },
   
   methods: {
-    goBack() {
-      uni.navigateBack();
+    // 处理返回逻辑
+    handleBack() {
+      const pages = getCurrentPages();
+      
+      // 如果页面栈长度 <= 1，说明没有上一页，跳转到登录页
+      if (pages.length <= 1) {
+        uni.reLaunch({
+          url: '/pages/login/login',
+        });
+      } else {
+        // 否则返回上一页
+        uni.navigateBack();
+      }
     },
     
     // 检查是否已加入该家庭
