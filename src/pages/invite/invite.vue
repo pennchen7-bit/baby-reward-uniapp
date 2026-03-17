@@ -486,8 +486,8 @@ export default {
 .container {
   min-height: 100vh;
   background: linear-gradient(180deg, #f0abfc 0%, #818cf8 50%, #60a5fa 100%);
-  padding-top: calc(88rpx + env(safe-area-inset-top));
-  padding-bottom: calc(100rpx + env(safe-area-inset-bottom));
+  padding-top: var(--status-bar-height);
+  padding-bottom: calc(80rpx + env(safe-area-inset-bottom));
 }
 
 /* 导航栏 */
@@ -496,7 +496,8 @@ export default {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20rpx 32rpx;
+  padding: 16rpx 32rpx;
+  height: 88rpx;
 }
 
 .back-btn {
