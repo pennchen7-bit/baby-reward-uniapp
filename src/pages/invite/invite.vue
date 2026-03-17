@@ -475,6 +475,7 @@ export default {
 .container {
   min-height: 100vh;
   background: linear-gradient(180deg, #f0abfc 0%, #818cf8 50%, #60a5fa 100%);
+  padding-top: calc(40rpx + env(safe-area-inset-top));
   padding-bottom: calc(100rpx + env(safe-area-inset-bottom));
 }
 
@@ -484,8 +485,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: calc(40rpx + env(safe-area-inset-top)) 32rpx 32rpx;
-  margin-top: 20rpx;
+  padding: 20rpx 32rpx;
 }
 
 .back-btn {
@@ -514,7 +514,7 @@ export default {
 
 /* 被邀请人容器 */
 .invitee-container {
-  padding: 20rpx 32rpx 32rpx;
+  padding: 32rpx;
 }
 
 /* 邀请卡片 */
@@ -732,7 +732,7 @@ export default {
 
 /* 邀请方容器 */
 .inviter-container {
-  padding: 20rpx 32rpx 32rpx;
+  padding: 32rpx;
 }
 
 /* 家庭卡片 */
