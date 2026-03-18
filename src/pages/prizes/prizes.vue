@@ -27,10 +27,44 @@
     </view>
 
     <!-- 添加奖品按钮 -->
-    <view class="add-btn" @click="showAddModal = true">
+    <view class="add-btn" @click="showAddOptionModal = true">
       <text class="add-icon">➕</text>
       <text class="add-text">添加奖品</text>
     </view>
+    
+    <!-- 添加方式选择弹窗 -->
+    <view v-if="showAddOptionModal" class="option-modal-overlay" @click="showAddOptionModal = false">
+      <view class="option-modal-content" @click.stop>
+        <text class="option-modal-title">选择添加方式</text>
+        <view class="option-list">
+          <view class="option-item" @click="openAIRecommend">
+            <text class="option-icon">✨</text>
+            <view class="option-info">
+              <text class="option-name">AI 智能推荐</text>
+              <text class="option-desc">描述需求，AI 帮您推荐</text>
+            </view>
+          </view>
+          <view class="option-item" @click="openManualAdd">
+            <text class="option-icon">✏️</text>
+            <view class="option-info">
+              <text class="option-name">手动添加</text>
+              <text class="option-desc">自己输入奖品信息</text>
+            </view>
+          </view>
+        </view>
+        <button class="option-cancel-btn" @click="showAddOptionModal = false">取消</button>
+      </view>
+    </view>
+    
+    <!-- AI 推荐弹窗 -->
+    <AIRecommendModal 
+      :visible="showAIRecommendModal"
+      :child-age="childAge"
+      :child-gender="childGender"
+      :existing-rewards="prizes.map(p => p.name)"
+      @close="showAIRecommendModal = false"
+      @added="onAIAdded"
+    />
 
     <!-- 奖品列表 -->
     <scroll-view class="prize-list" scroll-y>
@@ -98,6 +132,7 @@
 <script>
 import { prizes } from '@/api/index';
 import { checkAuth } from '@/utils/auth';
+import AIRecommendModal from '@/components/AIRecommendModal.vue';
 
 // 默认推荐奖品（小朋友喜欢的）
 const DEFAULT_RECOMMENDATIONS = [
@@ -110,11 +145,16 @@ const DEFAULT_RECOMMENDATIONS = [
 ];
 
 export default {
+  components: {
+    AIRecommendModal,
+  },
   data() {
     return {
       prizes: [],
       recommendations: DEFAULT_RECOMMENDATIONS,
       showAddModal: false,
+      showAddOptionModal: false,
+      showAIRecommendModal: false,
       editingPrize: null,
       formData: {
         name: '',
@@ -122,6 +162,8 @@ export default {
         points: '',
         imageUrl: '',
       },
+      childAge: null,
+      childGender: '',
     };
   },
   
@@ -136,10 +178,48 @@ export default {
       return;
     }
     
+    // 获取孩子信息
+    const familyInfo = uni.getStorageSync('family_info');
+    if (familyInfo?.children?.length > 0) {
+      const child = familyInfo.children[0];
+      this.childAge = this.calculateAge(child.birthday);
+      this.childGender = child.gender === 'male' ? 'male' : 'female';
+    }
+    
     this.fetchPrizes();
   },
   
   methods: {
+    calculateAge(birthday) {
+      if (!birthday) return null;
+      const birth = new Date(birthday);
+      const today = new Date();
+      let age = today.getFullYear() - birth.getFullYear();
+      const monthDiff = today.getMonth() - birth.getMonth();
+      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+        age--;
+      }
+      return age;
+    },
+    
+    openAIRecommend() {
+      console.log('[Prizes] openAIRecommend called');
+      console.log('[Prizes] Before set - showAIRecommendModal:', this.showAIRecommendModal);
+      this.showAddOptionModal = false;
+      this.showAIRecommendModal = true;
+      console.log('[Prizes] After set - showAIRecommendModal:', this.showAIRecommendModal);
+    },
+    
+    openManualAdd() {
+      this.showAddOptionModal = false;
+      this.showAddModal = true;
+    },
+    
+    onAIAdded(addedPrizes) {
+      console.log('AI added prizes:', addedPrizes);
+      this.fetchPrizes();
+    },
+    
     async fetchPrizes() {
       const userInfo = uni.getStorageSync('user_info');
       if (!userInfo) return;
@@ -309,8 +389,8 @@ page {
 .header {
   position: relative;
   text-align: center;
-  margin-bottom: 24rpx;
-  padding: 20rpx 0;
+  margin-bottom: 32rpx;
+  padding: 24rpx 0;
   flex-shrink: 0;
 }
 
@@ -319,25 +399,27 @@ page {
   left: 0;
   top: 50%;
   transform: translateY(-50%);
-  width: 60rpx;
-  height: 60rpx;
+  width: 72rpx;
+  height: 72rpx;
   display: flex;
   align-items: center;
   justify-content: center;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
 }
 
 .back-icon {
-  font-size: 60rpx;
+  font-size: 56rpx;
   color: #ffffff;
   line-height: 1;
 }
 
 .title {
   display: block;
-  font-size: 40rpx;
+  font-size: 44rpx;
   font-weight: bold;
   color: #ffffff;
-  margin-bottom: 8rpx;
+  margin-bottom: 12rpx;
   text-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.15);
 }
 
@@ -425,33 +507,33 @@ page {
 
 .add-btn {
   background: rgba(255, 255, 255, 0.95);
-  border-radius: 24rpx;
-  padding: 28rpx;
+  border-radius: 28rpx;
+  padding: 32rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12rpx;
-  margin-bottom: 24rpx;
-  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.08);
+  gap: 16rpx;
+  margin-bottom: 32rpx;
+  box-shadow: 0 6rpx 24rpx rgba(0, 0, 0, 0.1);
   flex-shrink: 0;
 }
 
 .add-icon {
-  font-size: 40rpx;
+  font-size: 44rpx;
 }
 
 .add-text {
-  font-size: 28rpx;
+  font-size: 30rpx;
   font-weight: 600;
   color: #9333ea;
 }
 
 .prize-list {
-  height: calc(100vh - 300rpx);
-  background: rgba(255, 255, 255, 0.9);
+  height: calc(100vh - 340rpx);
+  background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10rpx);
-  border-radius: 24rpx;
-  padding: 24rpx;
+  border-radius: 28rpx;
+  padding: 32rpx;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   width: 100%;
@@ -479,25 +561,26 @@ page {
 .prize-card {
   display: flex;
   align-items: center;
-  gap: 20rpx;
+  gap: 24rpx;
   background: #ffffff;
-  border-radius: 16rpx;
-  padding: 20rpx;
-  margin-bottom: 16rpx;
-  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+  border-radius: 20rpx;
+  padding: 28rpx 32rpx;
+  margin-bottom: 24rpx;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
   width: 100%;
   box-sizing: border-box;
 }
 
 .prize-icon {
-  width: 80rpx;
-  height: 80rpx;
+  width: 100rpx;
+  height: 100rpx;
+  min-width: 100rpx;
   background: linear-gradient(135deg, #f3e8ff 0%, #fce7f3 100%);
-  border-radius: 12rpx;
+  border-radius: 16rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 40rpx;
+  font-size: 48rpx;
   flex-shrink: 0;
 }
 
@@ -506,50 +589,59 @@ page {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 6rpx;
+  gap: 8rpx;
 }
 
 .prize-name {
-  font-size: 28rpx;
+  font-size: 32rpx;
   font-weight: 600;
   color: #1f2937;
+  line-height: 1.4;
 }
 
 .prize-desc {
-  font-size: 22rpx;
+  font-size: 24rpx;
   color: #6b7280;
+  line-height: 1.4;
 }
 
 .prize-points {
-  font-size: 24rpx;
+  font-size: 26rpx;
   color: #eab308;
   font-weight: 600;
+  display: inline-flex;
+  align-items: center;
 }
 
 .prize-actions {
   display: flex;
-  flex-direction: column;
-  gap: 8rpx;
+  gap: 16rpx;
   flex-shrink: 0;
 }
 
-.btn-edit, .btn-delete {
-  padding: 12rpx 20rpx;
-  border-radius: 8rpx;
-  font-size: 22rpx;
-  font-weight: 600;
-  height: auto;
-  line-height: 1.5;
-}
-
-.btn-edit {
+.btn-icon {
+  width: 64rpx;
+  height: 64rpx;
+  min-width: 64rpx;
+  border-radius: 50%;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28rpx;
   background: #f3f4f6;
-  color: #374151;
+  transition: all 0.2s;
+  padding: 0;
+  line-height: 1;
 }
 
-.btn-delete {
+.btn-icon.delete {
   background: #fee2e2;
   color: #dc2626;
+}
+
+.btn-icon:active {
+  transform: scale(0.9);
 }
 
 /* 弹窗 */
@@ -630,5 +722,93 @@ page {
 .btn-modal-save {
   background: #9333ea;
   color: #ffffff;
+}
+
+/* 添加方式选择弹窗 */
+.option-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1001;
+}
+
+.option-modal-content {
+  background: #ffffff;
+  border-radius: 24rpx;
+  padding: 32rpx;
+  width: 600rpx;
+  max-width: 90%;
+}
+
+.option-modal-title {
+  display: block;
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #1f2937;
+  text-align: center;
+  margin-bottom: 32rpx;
+}
+
+.option-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+  margin-bottom: 24rpx;
+}
+
+.option-item {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  padding: 24rpx;
+  background: #f9fafb;
+  border-radius: 16rpx;
+  border: 2rpx solid #e5e7eb;
+  transition: all 0.2s;
+}
+
+.option-item:active {
+  background: #f3f4f6;
+  transform: scale(0.98);
+}
+
+.option-icon {
+  font-size: 48rpx;
+  flex-shrink: 0;
+}
+
+.option-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+}
+
+.option-name {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.option-desc {
+  font-size: 22rpx;
+  color: #6b7280;
+}
+
+.option-cancel-btn {
+  width: 100%;
+  height: 72rpx;
+  background: #e5e7eb;
+  color: #374151;
+  border-radius: 12rpx;
+  font-size: 28rpx;
+  font-weight: 600;
+  border: none;
 }
 </style>
