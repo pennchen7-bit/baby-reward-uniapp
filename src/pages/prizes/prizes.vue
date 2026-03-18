@@ -74,17 +74,17 @@
       </view>
 
       <view v-else v-for="(prize, index) in prizes" :key="prize.id" class="prize-card">
-        <view class="prize-left">
-          <view class="prize-icon">{{ prize.imageUrl || '🎁' }}</view>
-          <view class="prize-info">
+        <view class="prize-icon">{{ prize.imageUrl || '🎁' }}</view>
+        <view class="prize-content">
+          <view class="prize-header">
             <text class="prize-name">{{ prize.name }}</text>
-            <text v-if="prize.description" class="prize-desc">{{ prize.description }}</text>
-            <text v-if="prize.points > 0" class="prize-points">⭐ {{ prize.points }} 积分</text>
+            <view class="prize-actions">
+              <button class="btn-icon" @click="editPrize(prize)">✏️</button>
+              <button class="btn-icon delete" @click="deletePrize(prize)">🗑️</button>
+            </view>
           </view>
-        </view>
-        <view class="prize-actions">
-          <button class="btn-icon" @click="editPrize(prize)">✏️</button>
-          <button class="btn-icon delete" @click="deletePrize(prize)">🗑️</button>
+          <text v-if="prize.description" class="prize-desc">{{ prize.description }}</text>
+          <text v-if="prize.points > 0" class="prize-points">⭐ {{ prize.points }} 积分</text>
         </view>
       </view>
     </scroll-view>
@@ -389,8 +389,8 @@ page {
 .header {
   position: relative;
   text-align: center;
-  margin-bottom: 32rpx;
-  padding: 24rpx 0;
+  margin-bottom: 24rpx;
+  padding: 20rpx 0;
   flex-shrink: 0;
 }
 
@@ -399,27 +399,25 @@ page {
   left: 0;
   top: 50%;
   transform: translateY(-50%);
-  width: 72rpx;
-  height: 72rpx;
+  width: 60rpx;
+  height: 60rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 50%;
 }
 
 .back-icon {
-  font-size: 56rpx;
+  font-size: 60rpx;
   color: #ffffff;
   line-height: 1;
 }
 
 .title {
   display: block;
-  font-size: 44rpx;
+  font-size: 40rpx;
   font-weight: bold;
   color: #ffffff;
-  margin-bottom: 12rpx;
+  margin-bottom: 8rpx;
   text-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.15);
 }
 
@@ -507,33 +505,33 @@ page {
 
 .add-btn {
   background: rgba(255, 255, 255, 0.95);
-  border-radius: 28rpx;
-  padding: 32rpx;
+  border-radius: 32rpx;
+  padding: 40rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 16rpx;
-  margin-bottom: 32rpx;
-  box-shadow: 0 6rpx 24rpx rgba(0, 0, 0, 0.1);
+  gap: 20rpx;
+  margin-bottom: 40rpx;
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.12);
   flex-shrink: 0;
 }
 
 .add-icon {
-  font-size: 44rpx;
+  font-size: 48rpx;
 }
 
 .add-text {
-  font-size: 30rpx;
+  font-size: 32rpx;
   font-weight: 600;
   color: #9333ea;
 }
 
 .prize-list {
-  height: calc(100vh - 340rpx);
+  height: calc(100vh - 400rpx);
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10rpx);
-  border-radius: 28rpx;
-  padding: 32rpx;
+  border-radius: 32rpx;
+  padding: 40rpx;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   width: 100%;
@@ -560,11 +558,11 @@ page {
 
 .prize-card {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 24rpx;
   background: #ffffff;
   border-radius: 20rpx;
-  padding: 28rpx 32rpx;
+  padding: 32rpx;
   margin-bottom: 24rpx;
   box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
   width: 100%;
@@ -580,16 +578,23 @@ page {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 48rpx;
+  font-size: 52rpx;
   flex-shrink: 0;
 }
 
-.prize-info {
+.prize-content {
   flex: 1;
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 8rpx;
+  gap: 10rpx;
+}
+
+.prize-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16rpx;
 }
 
 .prize-name {
@@ -597,38 +602,25 @@ page {
   font-weight: 600;
   color: #1f2937;
   line-height: 1.4;
-}
-
-.prize-desc {
-  font-size: 24rpx;
-  color: #6b7280;
-  line-height: 1.4;
-}
-
-.prize-points {
-  font-size: 26rpx;
-  color: #eab308;
-  font-weight: 600;
-  display: inline-flex;
-  align-items: center;
+  flex: 1;
 }
 
 .prize-actions {
   display: flex;
-  gap: 16rpx;
+  gap: 12rpx;
   flex-shrink: 0;
 }
 
 .btn-icon {
-  width: 64rpx;
-  height: 64rpx;
-  min-width: 64rpx;
+  width: 56rpx;
+  height: 56rpx;
+  min-width: 56rpx;
   border-radius: 50%;
   border: none;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 28rpx;
+  font-size: 26rpx;
   background: #f3f4f6;
   transition: all 0.2s;
   padding: 0;
@@ -642,6 +634,20 @@ page {
 
 .btn-icon:active {
   transform: scale(0.9);
+}
+
+.prize-desc {
+  font-size: 26rpx;
+  color: #6b7280;
+  line-height: 1.5;
+}
+
+.prize-points {
+  font-size: 28rpx;
+  color: #eab308;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
 }
 
 /* 弹窗 */
