@@ -191,44 +191,6 @@ export default {
       this.generating = true;
       
       try {
-        // 临时使用模拟数据（因为线上 API 还未部署）
-        const mockSuggestions = this.getMockSuggestions(this.userDescription.trim());
-        
-        this.suggestions = mockSuggestions;
-        this.aiMessage = '根据您的描述，我为您推荐了以下奖品。';
-        this.step = 2;
-        this.selectedIndices = [];
-        
-        uni.showToast({
-          title: '生成成功',
-          icon: 'success',
-        });
-      } catch (err) {
-        console.error('[AIRecommendModal] Error:', err);
-        uni.showToast({
-          title: err.message || 'AI 推荐失败，请重试',
-          icon: 'none',
-          duration: 3000,
-        });
-      } finally {
-        this.generating = false;
-      }
-    },
-    
-    async generateSuggestions() {
-      console.log('[AIRecommendModal] generateSuggestions called');
-      
-      if (!this.userDescription.trim()) {
-        uni.showToast({
-          title: '请输入奖品描述',
-          icon: 'none',
-        });
-        return;
-      }
-      
-      this.generating = true;
-      
-      try {
         // 调用后端 /api/recommend 接口
         const API_BASE_URL = 'https://baby-reward.clovey.site';
         
@@ -274,19 +236,27 @@ export default {
         }
       } catch (err) {
         console.error('[AIRecommendModal] Error:', err);
+        // 降级使用模拟数据
+        console.log('[AIRecommendModal] Falling back to mock data');
+        const mockSuggestions = this.getMockSuggestions(this.userDescription.trim());
+        this.suggestions = mockSuggestions;
+        this.aiMessage = '根据您的描述，我为您推荐了以下奖品（离线模式）。';
+        this.step = 2;
+        this.selectedIndices = [];
+        
         uni.showToast({
-          title: err.message || 'AI 推荐失败，请重试',
-          icon: 'none',
-          duration: 3000,
+          title: '生成成功（离线模式）',
+          icon: 'success',
         });
       } finally {
         this.generating = false;
       }
     },
     
-    regenerate() {
-      this.step = 1;
-      // 可以保留描述重新生成，或者清空让用户修改
+    async regenerate() {
+      console.log('[AIRecommendModal] regenerate called, re-generating suggestions...');
+      // 保持 step=2，直接重新调用接口生成新数据
+      await this.generateSuggestions();
     },
     
     toggleSelect(index) {
@@ -375,6 +345,73 @@ export default {
       } finally {
         this.loading = false;
       }
+    },
+    
+    getMockSuggestions(input) {
+      // 离线模拟数据（当 API 不可用时使用）
+      const baseSuggestions = [
+        {
+          name: '精美笔记本套装',
+          description: '高品质笔记本 + 彩色笔套装',
+          category: '学习用品',
+          points: 50,
+          reason: '适合学习和记录',
+          trending: true,
+        },
+        {
+          name: '健康零食大礼包',
+          description: '坚果、果干混合装',
+          category: '健康零食',
+          points: 30,
+          reason: '营养又美味',
+          trending: false,
+        },
+        {
+          name: '益智拼图玩具',
+          description: '500 片拼图，锻炼思维能力',
+          category: '玩具',
+          points: 80,
+          reason: '寓教于乐',
+          trending: true,
+        },
+        {
+          name: '儿童跳绳',
+          description: '可调节长度，适合户外运动',
+          category: '户外运动',
+          points: 40,
+          reason: '锻炼身体协调性',
+          trending: false,
+        },
+        {
+          name: '科学实验套装',
+          description: '简单安全的化学实验工具',
+          category: '学习用品',
+          points: 120,
+          reason: '培养科学兴趣',
+          trending: true,
+        },
+        {
+          name: '卡通水杯',
+          description: '环保材质，可爱图案',
+          category: '生活用品',
+          points: 25,
+          reason: '实用又美观',
+          trending: false,
+        },
+      ];
+      
+      // 根据输入简单筛选
+      const keywords = input.split(/[,,\u3001]/).filter(k => k.trim());
+      if (keywords.length > 0) {
+        const filtered = baseSuggestions.filter(s => 
+          keywords.some(k => s.name.includes(k) || s.category.includes(k) || s.description.includes(k))
+        );
+        if (filtered.length > 0) {
+          return filtered;
+        }
+      }
+      
+      return baseSuggestions;
     },
     
     getEmojiForCategory(category) {
