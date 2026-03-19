@@ -192,11 +192,11 @@ export default {
       
       try {
         // 调用后端 /api/recommend 接口
-        const API_BASE_URL = 'https://baby-reward.clovey.site';
+        const API_BASE_URL = 'https://baby-reward.clovey.site/api';
         
         const res = await new Promise((resolve, reject) => {
           uni.request({
-            url: `${API_BASE_URL}/api/recommend`,
+            url: `${API_BASE_URL}/recommend`,
             method: 'POST',
             header: { 'Content-Type': 'application/json' },
             data: { input: this.userDescription.trim() },
@@ -286,13 +286,13 @@ export default {
         console.log('[AIRecommendModal] Adding prizes:', selectedPrizes.length);
         console.log('[AIRecommendModal] userInfo:', userInfo);
         
-        const API_BASE_URL = 'https://baby-reward.clovey.site';
+        const API_BASE_URL = 'https://baby-reward.clovey.site/api';
         
         // 批量添加奖品
         const addPromises = selectedPrizes.map(prize => 
           new Promise((resolve, reject) => {
             uni.request({
-              url: `${API_BASE_URL}/api/prizes`,
+              url: `${API_BASE_URL}/prizes`,
               method: 'POST',
               header: { 
                 'Content-Type': 'application/json',
