@@ -6,19 +6,20 @@
 const ROLE_PERMISSIONS = {
   admin: ['index', 'history', 'requests', 'prizes', 'members', 'invite', 'reports'],
   parent: ['index', 'history', 'requests', 'prizes', 'members', 'invite', 'reports'],
-  baby: ['index', 'history'], // 宝宝只能访问首页和历史记录
+  baby: ['index', 'history', 'prizes'], // 宝宝可以访问首页、历史和奖品列表
+  guest: ['index', 'prizes'], // 游客只能访问首页和奖品列表（只读）
 };
 
-// 页面路径与权限的映射
+// 页面路径与权限的映射 - 允许游客访问的页面
 const PAGE_PERMISSIONS = {
-  '/pages/index/index': ['admin', 'parent', 'baby'],
+  '/pages/index/index': ['admin', 'parent', 'baby', 'guest'], // 首页游客可访问
+  '/pages/prizes/prizes': ['admin', 'parent', 'baby', 'guest'], // 奖品页游客可访问（只读）
+  '/pages/login/login': ['admin', 'parent', 'baby', 'guest'], // 登录页/自动登录页所有人可访问
   '/pages/history/history': ['admin', 'parent', 'baby'],
   '/pages/requests/requests': ['admin', 'parent'],
-  '/pages/prizes/prizes': ['admin', 'parent'],
   '/pages/members/members': ['admin', 'parent'],
   '/pages/invite/invite': ['admin', 'parent'],
   '/pages/reports/reports': ['admin', 'parent'],
-  '/pages/login/login': ['admin', 'parent', 'baby'], // 登录页所有人都可以访问
 };
 
 /**
@@ -45,8 +46,13 @@ export function getUserRole() {
 export function canAccessPage(pagePath) {
   const userInfo = uni.getStorageSync('user_info');
   
-  // 未登录，无权限
+  // 未登录用户作为游客处理
   if (!userInfo || !userInfo.id) {
+    // 检查该页面是否允许游客访问
+    const allowedRoles = PAGE_PERMISSIONS[pagePath];
+    if (allowedRoles && allowedRoles.includes('guest')) {
+      return true;
+    }
     return false;
   }
   
@@ -138,15 +144,23 @@ function getRoleName(role) {
  * @param {Function} onUnauthorized - 无权限时的回调函数
  */
 export function checkAuth(pagePath, onUnauthorized) {
-  // 检查登录状态
-  if (!isLoggedIn()) {
+  const userInfo = uni.getStorageSync('user_info');
+  
+  // 未登录用户检查该页面是否允许游客访问
+  if (!userInfo || !userInfo.id) {
+    const allowedRoles = PAGE_PERMISSIONS[pagePath];
+    if (allowedRoles && allowedRoles.includes('guest')) {
+      // 游客可以访问，不做登录跳转
+      return true;
+    }
+    // 不允许游客访问，跳转到登录页
     uni.reLaunch({
       url: '/pages/login/login',
     });
     return false;
   }
   
-  // 检查页面权限
+  // 已登录用户检查页面权限
   if (!canAccessPage(pagePath)) {
     const role = getUserRole();
     

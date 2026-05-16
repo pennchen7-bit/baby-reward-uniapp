@@ -163,52 +163,33 @@
           class="btn-generate"
           :class="{ 'btn-disabled': generating }"
           :disabled="generating"
+          open-type="share"
           @click="handleGenerate"
         >
-          <text class="btn-icon">{{ generating ? '⏳' : '✨' }}</text>
-          <text class="btn-text">{{ generating ? '生成中...' : '生成邀请链接' }}</text>
+          <text class="btn-text">{{ generating ? '生成中...' : '邀请' }}</text>
         </button>
       </view>
 
       <!-- 邀请结果 -->
-      <view v-if="inviteLink" class="invite-result">
+      <view v-if="inviteLink" class="invite-result" style="display:none">
         <view class="result-card">
           <view class="result-header">
             <text class="result-icon">✅</text>
-            <text class="result-title">邀请链接已生成</text>
+            <text class="result-title">邀请已准备好</text>
           </view>
           
           <view class="result-info">
-            <text class="result-desc">分享给微信好友，邀请 TA 加入</text>
+            <text class="result-desc">点击下方按钮分享给好友</text>
           </view>
           
-          <!-- 分享按钮：使用 open-type 触发小程序分享面板 -->
-          <button class="btn-share" open-type="share">
-            <text class="share-icon">📤</text>
-            <text class="share-text">选择好友分享</text>
+          <!-- 直接调起微信好友选择界面 -->
+          <button 
+            class="btn-share" 
+            open-type="share" 
+            hover-class="btn-share-hover"
+          >
+            📤 邀请好友
           </button>
-        </view>
-        
-        <!-- 使用说明 -->
-        <view class="guide-section">
-          <view class="guide-header">
-            <text class="guide-icon">📖</text>
-            <text class="guide-title">使用说明</text>
-          </view>
-          <view class="guide-list">
-            <view class="guide-item">
-              <view class="guide-step">1</view>
-              <text class="guide-text">点击"选择好友分享"发送邀请</text>
-            </view>
-            <view class="guide-item">
-              <view class="guide-step">2</view>
-              <text class="guide-text">对方点击卡片后查看邀请详情</text>
-            </view>
-            <view class="guide-item">
-              <view class="guide-step">3</view>
-              <text class="guide-text">确认加入后自动加入你的家庭</text>
-            </view>
-          </view>
         </view>
       </view>
     </view>
@@ -255,6 +236,11 @@ export default {
   onLoad(options) {
     console.log('Invite page loaded, options:', options);
     
+    // 启用分享功能
+    uni.showShareMenu({
+      withShareTicket: true,
+    });
+    
     // 检查是否有邀请码参数（被邀请人）
     if (options && options.code) {
       this.isInvitee = true;
@@ -286,23 +272,26 @@ export default {
     }
   },
   
-  // 小程序分享配置
+  // 小程序分享配置 - 支持右上角分享胶囊和自定义分享按钮
   onShareAppMessage() {
-    if (this.familyCode) {
-      return {
-        title: `📧 邀请你加入${this.familyName}`,
-        path: `/pages/invite/invite?code=${this.familyCode}&role=${this.role}`,
-        imageUrl: '',
-      };
-    }
+    console.log('onShareAppMessage called, familyCode:', this.familyCode, 'familyName:', this.familyName, 'role:', this.role);
+    const sharePath = this.familyCode 
+      ? `/pages/invite/invite?code=${this.familyCode}&role=${this.role}`
+      : '/pages/index/index';
+    const shareTitle = this.familyCode 
+      ? `📧 邀请你加入${this.familyName}`
+      : '📧 宝宝奖励计划 - 家庭任务管理';
+    
     return {
-      title: `📧 邀请加入${this.familyName}`,
-      path: '/pages/index/index',
+      title: shareTitle,
+      path: sharePath,
+      // 使用默认封面图（不设置 imageUrl 则使用小程序默认封面）
     };
   },
   
   // 分享到朋友圈
   onShareTimeline() {
+    console.log('onShareTimeline called, familyCode:', this.familyCode);
     if (this.familyCode) {
       return {
         title: `📧 邀请加入${this.familyName}`,
@@ -310,7 +299,7 @@ export default {
       };
     }
     return {
-      title: `📧 邀请加入`,
+      title: `📧 宝宝奖励计划`,
     };
   },
   
@@ -377,6 +366,7 @@ export default {
         
         if (res.success) {
           this.inviteData = {
+            id: res.family.id,  // 添加 id（家庭ID），用于登录后加入
             familyName: res.family.name,
             familyCode: res.family.familyCode,
             role: this.inviteRole,
@@ -394,26 +384,16 @@ export default {
     },
 
     async handleGenerate() {
-      this.generating = true;
+      // 先调用后端生成邀请链接，存储后 onShareAppMessage 会用到
+      if (this.inviteLink) return; // 已有直接分享
       
+      this.generating = true;
       try {
         const res = await invite.generate({ role: this.role });
-        this.familyCode = res.familyCode;
+        this.inviteLink = res.inviteLink;
         this.familyName = res.familyName;
-        this.inviteLink = res.invitePath || `/pages/invite/invite?code=${res.familyCode}`;
-        this.displayLink = `家庭码：${res.familyCode} | 角色：${this.role === 'parent' ? '家长' : '宝宝'}`;
-        
-        uni.showToast({
-          title: '生成成功，请选择分享好友',
-          icon: 'success',
-          duration: 1500,
-        });
       } catch (err) {
-        uni.showToast({
-          title: err.message || '生成失败',
-          icon: 'none',
-          duration: 3000,
-        });
+        uni.showToast({ title: err.message || '生成失败', icon: 'none' });
       } finally {
         this.generating = false;
       }
@@ -435,6 +415,7 @@ export default {
           const res = await invite.join(this.inviteCode, {
             wechatOpenid: userInfo.wechatOpenid,
             username: userInfo.username,
+            role: this.inviteRole,
           });
           
           if (res.success) {
@@ -451,7 +432,15 @@ export default {
             }, 2000);
           }
         } else {
+          // 存储邀请信息，login.vue 会读取 invite_family_id 和 invite_role
+          // 注意：inviteData.id 是家庭ID（来自 invite.verify 接口的 res.family.id）
+          console.log('[invite handleJoin] storing invite data:', {
+            code: this.inviteCode,
+            familyId: this.inviteData?.id,
+            role: this.inviteRole
+          });
           uni.setStorageSync('invite_code', this.inviteCode);
+          uni.setStorageSync('invite_family_id', this.inviteData?.id);
           uni.setStorageSync('invite_role', this.inviteRole);
           
           uni.showToast({
@@ -461,7 +450,8 @@ export default {
           });
           
           setTimeout(() => {
-            uni.navigateTo({ url: '/pages/login/login' });
+            // 跳转到登录页时带上 inviteCode 参数，确保 login 能收到
+            uni.navigateTo({ url: '/pages/login/login?inviteCode=' + encodeURIComponent(this.inviteCode) });
           }, 1500);
         }
       } catch (err) {
@@ -933,6 +923,11 @@ export default {
   font-weight: 600;
   margin-bottom: 20rpx;
   box-shadow: 0 8rpx 24rpx rgba(16, 185, 129, 0.3);
+}
+
+.btn-share-hover {
+  opacity: 0.8;
+  transform: scale(0.98);
 }
 
 .share-icon {

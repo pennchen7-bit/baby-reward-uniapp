@@ -168,14 +168,20 @@ export default {
   },
   
   onLoad() {
-    // 权限验证
-    if (!checkAuth('/pages/prizes/prizes', (role) => {
-      uni.showToast({
-        title: '仅管理员和家长可访问',
-        icon: 'none',
-      });
-    })) {
-      return;
+    // 权限验证 - 允许游客访问查看奖品列表
+    const userInfo = uni.getStorageSync('user_info');
+    const isGuest = !userInfo || !userInfo.id;
+    
+    if (!isGuest) {
+      // 已登录用户，常规权限检查
+      if (!canAccessPage('/pages/prizes/prizes')) {
+        const role = userInfo.role;
+        uni.showToast({
+          title: role === 'baby' ? '宝宝暂无此权限' : '仅管理员和家长可访问',
+          icon: 'none',
+        });
+        return;
+      }
     }
     
     // 获取孩子信息
@@ -186,7 +192,15 @@ export default {
       this.childGender = child.gender === 'male' ? 'male' : 'female';
     }
     
-    this.fetchPrizes();
+    if (isGuest) {
+      // 游客模式：从本地缓存加载
+      const cachedPrizes = uni.getStorageSync('local_prizes');
+      if (cachedPrizes) {
+        this.prizes = cachedPrizes;
+      }
+    } else {
+      this.fetchPrizes();
+    }
   },
   
   methods: {
@@ -216,8 +230,13 @@ export default {
     },
     
     onAIAdded(addedPrizes) {
-      console.log('AI added prizes:', addedPrizes);
-      this.fetchPrizes();
+      const userInfo = uni.getStorageSync('user_info');
+      const isGuest = !userInfo || !userInfo.id;
+      if (isGuest) {
+        this.prizes = uni.getStorageSync('local_prizes') || [];
+      } else {
+        this.fetchPrizes();
+      }
     },
     
     async fetchPrizes() {
@@ -250,14 +269,33 @@ export default {
         return;
       }
       
+      const userInfo = uni.getStorageSync('user_info');
+      const isGuest = !userInfo || !userInfo.id;
+      const data = {
+        ...this.formData,
+        familyId: userInfo?.familyId || 'local',
+        points: this.formData.points ? parseInt(this.formData.points) : 0,
+      };
+      
+      if (isGuest) {
+        // 游客模式：保存到本地缓存
+        const localPrizes = uni.getStorageSync('local_prizes') || [];
+        if (this.editingPrize) {
+          const idx = localPrizes.findIndex(p => p.id === this.editingPrize.id);
+          if (idx !== -1) localPrizes[idx] = { ...localPrizes[idx], ...data };
+        } else {
+          localPrizes.push({ id: 'local_' + Date.now(), ...data });
+        }
+        uni.setStorageSync('local_prizes', localPrizes);
+        this.prizes = localPrizes;
+        this.showAddModal = false;
+        this.editingPrize = null;
+        this.formData = { name: '', description: '', points: '', imageUrl: '' };
+        uni.showToast({ title: '已保存到本地，登录后可同步', icon: 'none' });
+        return;
+      }
+      
       try {
-        const userInfo = uni.getStorageSync('user_info');
-        const data = {
-          ...this.formData,
-          familyId: userInfo.familyId,
-          points: this.formData.points ? parseInt(this.formData.points) : 0,
-        };
-        
         if (this.editingPrize) {
           await prizes.update({ ...data, id: this.editingPrize.id });
           uni.showToast({ title: '更新成功', icon: 'success' });
@@ -282,10 +320,19 @@ export default {
         content: `确定要删除奖品"${prize.name}"吗？`,
         success: async (res) => {
           if (res.confirm) {
+            // 如果是本地奖品（游客模式）
+            if (prize.id && prize.id.startsWith('local_')) {
+              const localPrizes = uni.getStorageSync('local_prizes') || [];
+              const filtered = localPrizes.filter(p => p.id !== prize.id);
+              uni.setStorageSync('local_prizes', filtered);
+              this.prizes = filtered;
+              uni.showToast({ title: '删除成功', icon: 'success' });
+              return;
+            }
+            
             try {
               const userInfo = uni.getStorageSync('user_info');
               const API_BASE_URL = 'https://baby-reward.clovey.site/api';
-              // 直接使用 uni.request 发送 DELETE 请求
               await new Promise((resolve, reject) => {
                 uni.request({
                   url: `${API_BASE_URL}/prizes?id=${prize.id}`,
@@ -334,8 +381,19 @@ export default {
         content: `确定要添加"${item.name}"到奖品列表吗？`,
         success: async (res) => {
           if (res.confirm) {
+            const userInfo = uni.getStorageSync('user_info');
+            const isGuest = !userInfo || !userInfo.id;
+            
+            if (isGuest) {
+              // 游客模式：保存到本地缓存
+              const localPrizes = uni.getStorageSync('local_prizes') || [];
+              localPrizes.push({ id: 'local_' + Date.now(), name: item.name, description: item.description, points: item.points, imageUrl: item.emoji });
+              uni.setStorageSync('local_prizes', localPrizes);
+              this.prizes = localPrizes;
+              return;
+            }
+            
             try {
-              const userInfo = uni.getStorageSync('user_info');
               await prizes.create({
                 name: item.name,
                 description: item.description,

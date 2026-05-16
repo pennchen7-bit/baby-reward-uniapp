@@ -5,54 +5,76 @@
       <text class="title">🎁 宝宝奖励计划</text>
       <text class="subtitle">{{ subtitleText }}</text>
     </view>
-    
+
     <!-- 用户信息卡片 -->
-    <view v-if="userInfo" class="user-card">
+    <view class="user-card">
       <view class="user-info-left">
         <view class="user-tag">
           <text class="user-icon">👤</text>
-          <text class="user-name">{{ userInfo.username }}</text>
+          <text class="user-name">{{ userInfo ? userInfo.username : '游客' }}</text>
         </view>
-        <text v-if="userInfo.role === 'baby'" class="role-badge baby">宝宝</text>
-        <text v-else-if="userInfo.role === 'parent'" class="role-badge parent">家长</text>
-        <text v-else-if="userInfo.role === 'admin'" class="role-badge admin">管理员</text>
+        <text v-if="userInfo?.role === 'baby'" class="role-badge baby">宝宝</text>
+        <text v-else-if="userInfo?.role === 'parent'" class="role-badge parent">家长</text>
+        <text v-else-if="userInfo?.role === 'admin'" class="role-badge admin">管理员</text>
+        <text v-else class="role-badge guest">游客</text>
       </view>
-      
+
       <view class="user-info-right">
-        <view class="family-name-box" @click="editFamilyName">
-          <text class="family-name-label">🏠 家庭</text>
-          <text class="family-name-value">{{ userInfo.familyName || '未设置' }}</text>
-          <text v-if="userInfo.role === 'admin'" class="edit-icon">✏️</text>
-        </view>
-        <button v-if="isAdminOrParent" class="btn-invite" @click="goToInvite">
-          <text class="invite-icon">📧</text>
-          <text class="invite-text">邀请</text>
-        </button>
+        <text class="user-role-text">{{ userInfo?.role === 'admin' ? '👑 管理员' : userInfo?.role === 'parent' ? '👨👩👧 家长' : userInfo?.role === 'baby' ? '👶 宝宝' : '👤 游客' }}</text>
       </view>
     </view>
 
-    <!-- 家长审批区域 -->
-    <view v-if="isAdminOrParent && pendingRequests.length > 0" class="approval-section">
+    <!-- 审批区域(仅家长/管理员可见) -->
+    <view v-if="isAdminOrParent" class="approval-section">
       <view class="section-header">
         <text class="section-title">🔔 待批准请求 ({{ pendingRequests.length }})</text>
-        <text class="refresh-btn" @click="fetchPendingRequests">🔄</text>
+        <text v-if="userInfo" class="refresh-btn" @click="fetchPendingRequests">🔄</text>
       </view>
-      
+
+      <view v-if="pendingRequests.length === 0" class="approval-section empty">
+        <text class="empty-text">暂无待批准请求</text>
+      </view>
+
       <view v-for="req in pendingRequests" :key="req.id" class="request-card">
         <view class="request-header">
           <text class="baby-name">👶 {{ req.babyName }} 申请抽奖</text>
           <text class="request-time">{{ formatTime(req.createdAt) }}</text>
         </view>
         <view class="request-actions">
-          <button class="btn-approve" @click="handleApprove(req, true)">✅ 批准</button>
-          <button class="btn-reject" @click="handleApprove(req, false)">❌ 拒绝</button>
+          <button class="btn-approve" @click="handleApproveAction(req, true)">✅ 批准</button>
+          <button class="btn-reject" @click="handleApproveAction(req, false)">❌ 拒绝</button>
         </view>
       </view>
     </view>
 
-    <!-- 家长审批区域（无请求时） -->
-    <view v-if="isAdminOrParent && pendingRequests.length === 0" class="approval-section empty">
-      <text class="empty-text">暂无待批准请求</text>
+    <!-- 中奖历史(仅家长/管理员可见) -->
+    <view v-if="isAdminOrParent" class="history-section">
+      <view class="section-header">
+        <text class="section-title">🏆 宝宝中奖记录</text>
+        <text class="section-count">最近 {{ drawRecords.length }} 条</text>
+      </view>
+
+      <view v-if="drawRecords.length === 0" class="history-empty">
+        <text>暂无中奖记录,快给宝宝添加奖品吧!</text>
+      </view>
+
+      <scroll-view v-else class="history-list" scroll-y>
+        <view v-for="record in drawRecords" :key="record.id" class="history-card">
+          <view class="history-icon">{{ record.imageUrl || '🎁' }}</view>
+          <view class="history-info">
+            <text class="history-name">{{ record.prizeName }}</text>
+            <text v-if="record.prizeDescription" class="history-desc">{{ record.prizeDescription }}</text>
+            <text class="history-meta">
+              👶 {{ record.babyName }} · {{ formatTime(record.drawnAt) }}
+            </text>
+          </view>
+          <view v-if="record.points > 0" class="history-points">⭐ {{ record.points }}</view>
+        </view>
+
+        <view v-if="hasMoreRecords && isAdminOrParent" class="load-more" @click="loadMoreRecords">
+          ⬇️ 加载更多(第 {{ recordsPage }} 页)
+        </view>
+      </scroll-view>
     </view>
 
     <!-- 宝宝抽奖区域 -->
@@ -62,17 +84,17 @@
         <text class="draw-emoji">✨</text>
         <text class="draw-title">家长已批准！</text>
         <text class="draw-subtitle">可以开始抽奖啦～</text>
-        
+
         <!-- 抽奖按钮 -->
-        <button 
+        <button
           v-if="!result"
-          class="btn-draw" 
+          class="btn-draw"
           :disabled="isSpinning"
           @click="handleDraw"
         >
           {{ isSpinning ? '抽奖中...' : '🎰 开始抽奖' }}
         </button>
-        
+
         <!-- 抽奖完成后显示结果和再抽一次按钮 -->
         <view v-else class="result-section">
           <view class="result-card">
@@ -103,57 +125,23 @@
       </view>
     </view>
 
-    <!-- 中奖历史（家长/管理员） -->
-    <view v-if="isAdminOrParent" class="history-section">
-      <view class="section-header">
-        <text class="section-title">🏆 宝宝中奖记录</text>
-        <text class="section-count">最近 {{ drawRecords.length }} 条</text>
-      </view>
-      
-      <view v-if="drawRecords.length === 0" class="history-empty">
-        <text>暂无中奖记录，快给宝宝添加奖品吧！</text>
-      </view>
-      
-      <scroll-view v-else class="history-list" scroll-y>
-        <view v-for="record in drawRecords" :key="record.id" class="history-card">
-          <view class="history-icon">{{ record.imageUrl || '🎁' }}</view>
-          <view class="history-info">
-            <text class="history-name">{{ record.prizeName }}</text>
-            <text v-if="record.prizeDescription" class="history-desc">{{ record.prizeDescription }}</text>
-            <text class="history-meta">
-              👶 {{ record.babyName }} · {{ formatTime(record.drawnAt) }}
-            </text>
-          </view>
-          <view v-if="record.points > 0" class="history-points">⭐ {{ record.points }}</view>
-        </view>
-        
-        <view v-if="hasMoreRecords" class="load-more" @click="loadMoreRecords">
-          ⬇️ 加载更多（第 {{ recordsPage }} 页）
-        </view>
-      </scroll-view>
-    </view>
-
     <!-- 底部导航 -->
     <view class="tabbar">
       <view class="tabbar-item" @click="goTo('/pages/history/history')">
         <text class="icon">📜</text>
         <text class="label">历史</text>
       </view>
-      <view v-if="isAdminOrParent" class="tabbar-item" @click="goTo('/pages/requests/requests')">
-        <text class="icon">🔔</text>
-        <text class="label">审批</text>
-      </view>
-      <view v-if="isAdminOrParent" class="tabbar-item" @click="goTo('/pages/prizes/prizes')">
+      <view v-if="!userInfo?.role || userInfo?.role !== 'baby'" class="tabbar-item" @click="goTo('/pages/prizes/prizes')">
         <text class="icon">🎁</text>
         <text class="label">奖品</text>
       </view>
-      <view v-if="isAdminOrParent" class="tabbar-item" @click="goTo('/pages/members/members')">
-        <text class="icon">👨‍👩‍👧‍👦</text>
-        <text class="label">成员</text>
+      <view v-if="!userInfo?.role || userInfo?.role !== 'baby'" class="tabbar-item" @click="goTo('/pages/requests/requests')">
+        <text class="icon">🔔</text>
+        <text class="label">审批</text>
       </view>
-      <view class="tabbar-item" @click="handleLogout">
-        <text class="icon">🚪</text>
-        <text class="label">退出</text>
+      <view class="tabbar-item" @click="goTo('/pages/my/my')">
+        <text class="icon">👤</text>
+        <text class="label">我的</text>
       </view>
     </view>
 
@@ -162,10 +150,10 @@
       <view class="modal-content" @click.stop>
         <text class="modal-title">审批请求</text>
         <text class="modal-subtitle">👶 {{ activeRequest?.babyName }} 申请抽奖</text>
-        <textarea 
-          class="modal-textarea" 
+        <textarea
+          class="modal-textarea"
           v-model="approvalReason"
-          placeholder="请填写原因（必填）"
+          placeholder="请填写原因(必填)"
           maxlength="200"
         />
         <view class="modal-actions">
@@ -185,57 +173,78 @@ export default {
   data() {
     return {
       userInfo: null,
-      subtitleText: '今天表现棒棒的！',
+      subtitleText: '今天表现棒棒的!',
       isSpinning: false,
       result: null,
       activeRequest: null,
       requestStatus: 'none', // none, pending, approved
-      
+
       // 家长审批
       pendingRequests: [],
       showApproval: false,
       approvalReason: '',
-      
+
       // 中奖历史
       drawRecords: [],
       recordsPage: 1,
       hasMoreRecords: true,
-      
+
       // 轮询定时器
       pollTimer: null,
     };
   },
-  
+
   computed: {
     isAdminOrParent() {
       return this.userInfo?.role === 'admin' || this.userInfo?.role === 'parent';
     },
   },
-  
+
   onLoad() {
-    this.loadUserInfo();
+    // 从 storage 恢复用户信息
+    const userInfo = uni.getStorageSync('user_info');
+    const isGuest = uni.getStorageSync('guest_mode');
+
+    if (isGuest) {
+      this.userInfo = null;
+    } else if (userInfo) {
+      this.userInfo = userInfo;
+      this.loadUserInfo();
+    }
+
+    uni.$on('userInfoUpdated', (userInfo) => {
+      this.userInfo = userInfo;
+    });
   },
-  
+
+  onShow() {
+    const localUserInfo = uni.getStorageSync('user_info');
+    if (localUserInfo) {
+      this.userInfo = localUserInfo;
+    }
+    this.fetchPendingRequests();
+    this.fetchDrawRecords();
+  },
+
   onUnload() {
     if (this.pollTimer) {
       clearInterval(this.pollTimer);
     }
+    uni.$off('userInfoUpdated');
   },
-  
+
   methods: {
     loadUserInfo() {
       this.userInfo = uni.getStorageSync('user_info');
-      
+
+      // 不再自动跳转到登录页,让游客看到欢迎页
       if (!this.userInfo) {
-        uni.reLaunch({ url: '/pages/login/login' });
         return;
       }
-      
-      // 设置副标题
+
       if (this.userInfo.role === 'baby') {
-        this.subtitleText = '今天表现棒棒的！';
+        this.subtitleText = '今天表现棒棒的!';
         this.checkPendingRequest();
-        // 轮询状态
         this.pollTimer = setInterval(() => {
           this.checkPendingRequest();
         }, 3000);
@@ -243,7 +252,6 @@ export default {
         this.subtitleText = '记录宝宝成长的每一步';
         this.fetchPendingRequests();
         this.fetchDrawRecords();
-        // 轮询请求
         this.pollTimer = setInterval(() => {
           this.fetchPendingRequests();
         }, 3000);
@@ -251,39 +259,44 @@ export default {
         this.subtitleText = '欢迎使用';
       }
     },
-    
-    // 检查待批准请求（宝宝）
+
     async checkPendingRequest() {
       try {
-        // 先查已批准的
         const approvedRes = await requests.list({
           babyId: this.userInfo.id,
           status: 'approved'
         });
-        
+
         if (approvedRes.requests && approvedRes.requests.length > 0) {
           this.activeRequest = approvedRes.requests[0];
           this.requestStatus = 'approved';
           return;
         }
-        
-        // 再查待批准的
+
         const pendingRes = await requests.list({
           babyId: this.userInfo.id,
           status: 'pending'
         });
-        
+
         if (pendingRes.requests && pendingRes.requests.length > 0) {
           this.activeRequest = pendingRes.requests[0];
           this.requestStatus = 'pending';
+          return;
         }
+
+        if (this.result) {
+          return;
+        }
+
+        this.activeRequest = null;
+        this.requestStatus = 'none';
       } catch (err) {
         console.error('Check request error:', err);
       }
     },
-    
-    // 获取待批准请求（家长）
+
     async fetchPendingRequests() {
+      if (!this.userInfo?.familyId) return;
       try {
         const res = await requests.list({
           familyId: this.userInfo.familyId,
@@ -294,73 +307,70 @@ export default {
         console.error('Fetch pending requests error:', err);
       }
     },
-    
-    // 获取中奖历史
+
     async fetchDrawRecords(page = 1) {
+      if (!this.userInfo?.familyId) return;
       try {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = now.getMonth() + 1;
+
         const res = await history.list({
           familyId: this.userInfo.familyId,
-          limit: '10',
-          page: page.toString()
+          year: year.toString(),
+          month: month.toString(),
+          page: page.toString(),
+          limit: '10'
         });
-        
+
         const records = res.records || [];
-        
+
         if (page === 1) {
           this.drawRecords = records;
         } else {
           this.drawRecords = [...this.drawRecords, ...records];
         }
-        
+
         this.recordsPage = page;
         this.hasMoreRecords = records.length === 10;
       } catch (err) {
         console.error('Fetch draw records error:', err);
       }
     },
-    
-    // 跳转到邀请页面
-    goToInvite() {
-      uni.navigateTo({
-        url: '/pages/invite/invite',
-      });
-    },
-    
-    // 退出登录
+
     async handleLogout() {
       try {
         await auth.logout();
       } catch (err) {
         console.error('Logout error:', err);
       }
-      
-      // 清除本地数据
+
       uni.removeStorageSync('user_info');
       uni.removeStorageSync('family_code');
-      
-      // 跳转到登录页
+      uni.removeStorageSync('family_info');
+      uni.removeStorageSync('local_prizes');
+
       uni.reLaunch({
-        url: '/pages/login/login',
+        url: '/pages/index/index',
       });
     },
-    
+
     loadMoreRecords() {
       if (this.hasMoreRecords) {
         this.fetchDrawRecords(this.recordsPage + 1);
       }
     },
-    
-    // 申请抽奖
+
     async handleRequestDraw() {
       try {
         await requests.create({
           babyId: this.userInfo.id,
           familyId: this.userInfo.familyId
         });
-        
+
         this.requestStatus = 'pending';
         uni.showToast({
-          title: '申请成功，等待家长批准',
+          title: '申请成功,等待家长批准',
           icon: 'success'
         });
       } catch (err) {
@@ -370,11 +380,10 @@ export default {
         });
       }
     },
-    
-    // 取消申请
+
     async handleCancelRequest() {
       if (!this.activeRequest) return;
-      
+
       try {
         await requests.delete(this.activeRequest.id);
         this.requestStatus = 'none';
@@ -386,18 +395,17 @@ export default {
         });
       }
     },
-    
-    // 执行抽奖
+
     async handleDraw() {
       if (this.isSpinning || this.requestStatus !== 'approved') return;
-      
+
       this.isSpinning = true;
-      
+
       try {
         const res = await draw.execute({
           requestId: this.activeRequest.id
         });
-        
+
         this.result = res;
         this.isSpinning = false;
       } catch (err) {
@@ -408,7 +416,13 @@ export default {
         this.isSpinning = false;
       }
     },
-    
+
+    handleContinueDraw() {
+      this.result = null;
+      this.requestStatus = 'none';
+      this.activeRequest = null;
+    },
+
     async handleRedraw() {
       // 清除结果，直接发起新的抽奖申请
       this.result = null;
@@ -431,37 +445,35 @@ export default {
         });
       }
     },
-    
-    // 显示审批弹窗
-    handleApprove(req, approve) {
+
+    handleApproveAction(req) {
       this.activeRequest = req;
       this.showApproval = true;
       this.approvalReason = '';
     },
-    
-    // 提交审批
+
     async handleApproveSubmit(approve) {
-      if (!this.approvalReason.trim()) {
+      if (!approve && !this.approvalReason?.trim()) {
         uni.showToast({
-          title: '请填写原因',
+          title: '请填写拒绝原因',
           icon: 'none'
         });
         return;
       }
-      
+
       try {
         await requests.approve(this.activeRequest.id, {
           status: approve ? 'approved' : 'rejected',
           approvedBy: this.userInfo.id,
           approvedByName: this.userInfo.username,
-          reason: this.approvalReason.trim()
+          reason: this.approvalReason?.trim() || undefined
         });
-        
+
         uni.showToast({
           title: approve ? '已批准' : '已拒绝',
           icon: 'success'
         });
-        
+
         this.showApproval = false;
         this.approvalReason = '';
         this.fetchPendingRequests();
@@ -472,113 +484,27 @@ export default {
         });
       }
     },
-    
+
     formatTime(timeStr) {
-      if (!timeStr) return '';
+      if (!timeStr) return '-';
       const date = new Date(timeStr);
       const now = new Date();
-      const isToday = date.toDateString() === now.toDateString();
-      
-      if (isToday) {
-        return date.toLocaleTimeString('zh-CN', {
-          hour: '2-digit',
-          minute: '2-digit'
-        });
-      } else {
-        return date.toLocaleDateString('zh-CN', {
-          month: '2-digit',
-          day: '2-digit'
-        });
-      }
+      const diff = now - date;
+
+      if (diff < 60000) return '刚刚';
+      if (diff < 3600000) return `${Math.floor(diff / 60000)}分钟前`;
+      if (diff < 86400000) return `${Math.floor(diff / 3600000)}小时前`;
+      return `${date.getMonth() + 1}月${date.getDate()}日 ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
     },
-    
+
     goTo(url) {
       uni.navigateTo({ url });
-    },
-    
-    // 编辑家庭名称
-    editFamilyName() {
-      if (this.userInfo.role !== 'admin') return;
-      
-      uni.showModal({
-        title: '编辑家庭名称',
-        editable: true,
-        placeholderText: '请输入家庭名称',
-        defaultText: this.userInfo.familyName || '',
-        success: (res) => {
-          if (res.confirm && res.content) {
-            this.updateFamilyName(res.content);
-          }
-        }
-      });
-    },
-    
-    async updateFamilyName(name) {
-      try {
-        const API_BASE_URL = 'https://baby-reward.clovey.site/api';
-        const userInfo = uni.getStorageSync('user_info');
-        
-        await new Promise((resolve, reject) => {
-          uni.request({
-            url: `${API_BASE_URL}/families/name`,
-            method: 'PUT',
-            data: { name },
-            header: {
-              'Content-Type': 'application/json',
-              'X-User-Id': userInfo.id,
-              'X-User-Role': userInfo.role,
-              'X-Family-Id': userInfo.familyId,
-            },
-            success: (res) => {
-              if (res.statusCode === 200) {
-                resolve(res.data);
-              } else {
-                reject(new Error(res.data?.error || '更新失败'));
-              }
-            },
-            fail: (err) => {
-              reject(new Error('网络错误'));
-            }
-          });
-        });
-        
-        // 更新本地存储
-        userInfo.familyName = name;
-        uni.setStorageSync('user_info', userInfo);
-        this.userInfo = userInfo;
-        
-        uni.showToast({
-          title: '更新成功',
-          icon: 'success'
-        });
-      } catch (err) {
-        uni.showToast({
-          title: err.message || '更新失败',
-          icon: 'none'
-        });
-      }
-    },
-    
-    handleLogout() {
-      uni.showModal({
-        title: '确认退出',
-        content: '确定要退出登录吗？',
-        success: (res) => {
-          if (res.confirm) {
-            uni.clearStorageSync();
-            uni.reLaunch({
-              url: '/pages/login/login'
-            });
-          }
-        }
-      });
     },
   },
 };
 </script>
 
 <style>
-/* page 级别样式 - 禁止页面滚动 */
 page {
   height: 100vh;
   overflow: hidden;
@@ -620,6 +546,108 @@ page {
   font-size: 24rpx;
   color: rgba(255, 255, 255, 0.9);
   display: block;
+}
+
+/* 游客视图 */
+.guest-view {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+}
+
+.guest-card {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 32rpx;
+  padding: 48rpx 40rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24rpx;
+  width: 100%;
+  box-shadow: 0 8rpx 40rpx rgba(0, 0, 0, 0.12);
+  backdrop-filter: blur(10rpx);
+}
+
+.guest-emoji {
+  font-size: 96rpx;
+  margin-bottom: 8rpx;
+}
+
+.guest-title {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #1f2937;
+  text-align: center;
+}
+
+.guest-desc {
+  font-size: 26rpx;
+  color: #6b7280;
+  text-align: center;
+  line-height: 1.6;
+  max-width: 500rpx;
+}
+
+.guest-features {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+  margin-top: 16rpx;
+}
+
+.feature-item {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  background: #f9fafb;
+  padding: 20rpx 24rpx;
+  border-radius: 16rpx;
+}
+
+.feature-icon {
+  font-size: 36rpx;
+  flex-shrink: 0;
+}
+
+.feature-text {
+  font-size: 26rpx;
+  color: #374151;
+}
+
+.btn-login {
+  width: 100%;
+  height: 88rpx;
+  border-radius: 44rpx;
+  font-size: 32rpx;
+  font-weight: bold;
+  background: linear-gradient(135deg, #9333ea 0%, #ec4899 100%);
+  color: #ffffff;
+  box-shadow: 0 8rpx 24rpx rgba(147, 51, 234, 0.3);
+  margin-top: 16rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-guest-exit {
+  width: 100%;
+  height: 72rpx;
+  border-radius: 36rpx;
+  font-size: 26rpx;
+  background: rgba(255, 255, 255, 0.3);
+  color: #ffffff;
+  border: 2rpx solid rgba(255, 255, 255, 0.5);
+  margin-top: 20rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-guest-exit:active {
+  background: rgba(255, 255, 255, 0.5);
 }
 
 /* 用户信息卡片 */
@@ -688,65 +716,45 @@ page {
   align-items: center;
   gap: 12rpx;
   flex-shrink: 0;
-  flex-wrap: wrap;
-  margin-top: 12rpx;
 }
 
-.family-name-box {
-  background: linear-gradient(135deg, #f0abfc 0%, #818cf8 100%);
-  padding: 12rpx 20rpx;
+.user-role-text {
+  font-size: 24rpx;
+  color: #6b7280;
+  background: rgba(255, 255, 255, 0.8);
+  padding: 10rpx 20rpx;
   border-radius: 16rpx;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4rpx;
 }
 
-.family-name-label {
-  display: block;
-  font-size: 18rpx;
-  color: rgba(255, 255, 255, 0.9);
+/* 审批区域 */
+.approval-section {
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 24rpx;
+  padding: 24rpx;
+  margin-bottom: 24rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.08);
+  backdrop-filter: blur(10rpx);
+  flex-shrink: 0;
+  width: 100%;
+  box-sizing: border-box;
 }
 
-.family-name-value {
-  display: block;
-  font-size: 28rpx;
-  font-weight: bold;
-  color: #ffffff;
-}
-
-.edit-icon {
-  font-size: 20rpx;
-  margin-top: 4rpx;
-}
-
-.btn-invite {
-  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
-  color: #ffffff;
-  padding: 14rpx 24rpx;
-  border-radius: 14rpx;
+/* 游客提示 */
+.guest-tip {
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 24rpx;
+  padding: 24rpx;
+  margin-bottom: 24rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.08);
+  backdrop-filter: blur(10rpx);
   display: flex;
   align-items: center;
-  gap: 8rpx;
-  font-size: 24rpx;
-  font-weight: 600;
-  border: none;
-  box-shadow: 0 4rpx 16rpx rgba(34, 197, 94, 0.3);
+  justify-content: center;
 }
 
-.btn-invite:active {
-  transform: scale(0.95);
-}
-
-.invite-icon {
+.guest-tip-text {
   font-size: 28rpx;
-  line-height: 1;
-}
-
-.invite-text {
-  font-size: 24rpx;
-  line-height: 1;
+  color: #64748b;
 }
 
 /* 审批区域 */
@@ -854,13 +862,13 @@ page {
   box-sizing: border-box;
 }
 
-.result-card, .draw-card, .pending-card {
+.draw-card, .pending-card {
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
-.result-emoji, .draw-emoji, .pending-emoji {
+.draw-emoji, .pending-emoji {
   font-size: 120rpx;
   margin-bottom: 24rpx;
 }
@@ -1114,6 +1122,7 @@ page {
   font-size: 26rpx;
   background: #f9fafb;
   margin-bottom: 24rpx;
+  box-sizing: border-box;
 }
 
 .modal-actions {
@@ -1146,6 +1155,181 @@ page {
   background: #ef4444;
   color: #ffffff;
 }
+
+/* 抽奖区域 */
+.draw-ready {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 32rpx;
+  padding: 40rpx 0;
+  width: 100%;
+}
+
+.draw-ready-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20rpx;
+  width: 100%;
+  background: linear-gradient(135deg, #ede9fe 0%, #fce7f3 100%);
+  border-radius: 24rpx;
+  padding: 40rpx 32rpx;
+  box-sizing: border-box;
+}
+
+.draw-ready-emoji {
+  font-size: 80rpx;
+}
+
+.draw-ready-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.draw-ready-baby {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.draw-ready-approver {
+  font-size: 26rpx;
+  color: #6b7280;
+}
+
+.draw-ready-time {
+  font-size: 24rpx;
+  color: #9ca3af;
+}
+
+.btn-draw {
+  width: 100%;
+  height: 88rpx;
+  border-radius: 44rpx;
+  font-size: 32rpx;
+  font-weight: bold;
+  background: linear-gradient(135deg, #9333ea 0%, #ec4899 100%);
+  color: #ffffff;
+  box-shadow: 0 8rpx 24rpx rgba(147, 51, 234, 0.3);
+}
+
+.btn-draw:disabled {
+  background: #9ca3af;
+  box-shadow: none;
+}
+
+.btn-continue-draw {
+  width: 100%;
+  height: 88rpx;
+  border-radius: 44rpx;
+  font-size: 32rpx;
+  font-weight: bold;
+  background: linear-gradient(135deg, #9333ea 0%, #ec4899 100%);
+  color: #ffffff;
+  box-shadow: 0 8rpx 24rpx rgba(147, 51, 234, 0.3);
+}
+
+/* 中奖庆祝 */
+.win-section {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 32rpx;
+  width: 100%;
+  padding: 40rpx 0;
+  overflow: hidden;
+}
+
+.win-card {
+  background: linear-gradient(135deg, #f3e8ff 0%, #fce7f3 100%);
+  border-radius: 24rpx;
+  padding: 48rpx 40rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16rpx;
+  width: 100%;
+  box-sizing: border-box;
+  animation: win-pop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 8rpx 32rpx rgba(168, 85, 247, 0.25);
+}
+
+.win-emoji {
+  font-size: 96rpx;
+  animation: win-bounce 1s ease-in-out infinite;
+}
+
+.win-title {
+  font-size: 28rpx;
+  color: #6b7280;
+}
+
+.win-name {
+  font-size: 40rpx;
+  font-weight: 700;
+  color: #1f2937;
+  text-align: center;
+}
+
+.win-points {
+  font-size: 28rpx;
+  color: #f59e0b;
+  font-weight: 600;
+  background: rgba(245, 158, 11, 0.1);
+  padding: 8rpx 24rpx;
+  border-radius: 20rpx;
+}
+
+/* 彩纸动画 */
+.confetti-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.confetti-piece {
+  position: absolute;
+  top: -20rpx;
+  width: 16rpx;
+  height: 16rpx;
+  border-radius: 4rpx;
+  animation: confetti-fall 3s ease-in infinite;
+}
+
+.confetti-piece:nth-child(odd) { background: #f59e0b; }
+.confetti-piece:nth-child(even) { background: #ec4899; }
+.confetti-piece:nth-child(3n) { background: #8b5cf6; }
+.confetti-piece:nth-child(5n) { background: #10b981; }
+.confetti-piece:nth-child(7n) { background: #3b82f6; }
+
+.confetti-1 { left: 5%; animation-delay: 0s; }
+.confetti-2 { left: 10%; animation-delay: 0.2s; background: #ec4899; }
+.confetti-3 { left: 15%; animation-delay: 0.4s; background: #8b5cf6; }
+.confetti-4 { left: 20%; animation-delay: 0.1s; }
+.confetti-5 { left: 25%; animation-delay: 0.3s; background: #10b981; }
+.confetti-6 { left: 30%; animation-delay: 0.5s; }
+.confetti-7 { left: 35%; animation-delay: 0.15s; background: #ec4899; }
+.confetti-8 { left: 40%; animation-delay: 0.35s; background: #8b5cf6; }
+.confetti-9 { left: 45%; animation-delay: 0.25s; }
+.confetti-10 { left: 50%; animation-delay: 0.45s; background: #10b981; }
+.confetti-11 { left: 55%; animation-delay: 0.05s; }
+.confetti-12 { left: 60%; animation-delay: 0.55s; background: #ec4899; }
+.confetti-13 { left: 65%; animation-delay: 0.3s; background: #8b5cf6; }
+.confetti-14 { left: 70%; animation-delay: 0.1s; }
+.confetti-15 { left: 75%; animation-delay: 0.5s; background: #10b981; }
+.confetti-16 { left: 80%; animation-delay: 0.2s; }
+.confetti-17 { left: 85%; animation-delay: 0.4s; background: #ec4899; }
+.confetti-18 { left: 90%; animation-delay: 0.15s; background: #8b5cf6; }
+.confetti-19 { left: 95%; animation-delay: 0.35s; }
+.confetti-20 { left: 98%; animation-delay: 0.5s; background: #10b981; }
 
 .result-section {
   display: flex;
@@ -1209,5 +1393,26 @@ page {
 .btn-redraw:active {
   opacity: 0.8;
   transform: scale(0.98);
+}
+
+@keyframes confetti-fall {
+  0% {
+    transform: translateY(-20rpx) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(600rpx) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+@keyframes win-pop {
+  0% { transform: scale(0.5); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes win-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-16rpx); }
 }
 </style>

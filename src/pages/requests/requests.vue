@@ -2,13 +2,11 @@
   <view class="container">
     <!-- 头部 -->
     <view class="header">
-      <!-- 返回按钮 -->
       <view class="back-btn" @click="goBack">
         <text class="back-icon">‹</text>
       </view>
-      
-      <text class="title">🔔 审批请求</text>
-      <text class="subtitle">{{ pendingCount }} 个待批准</text>
+      <text class="title">📋 审批记录</text>
+      <text class="subtitle">{{ pendingCount }} 个待处理</text>
     </view>
 
     <!-- 筛选 -->
@@ -27,37 +25,50 @@
       </view>
     </view>
 
-    <!-- 请求列表 -->
+    <!-- 记录列表 -->
     <scroll-view class="list" scroll-y>
-      <!-- 空状态 -->
       <view v-if="filteredRequests.length === 0" class="empty-state">
         <text class="empty-emoji">📭</text>
         <text class="empty-text">暂无{{ filters.find(f => f.value === currentFilter)?.label }}</text>
       </view>
 
-      <!-- 请求卡片 -->
-      <view v-for="req in filteredRequests" :key="req.id" class="request-card">
-        <view class="request-header">
-          <view class="request-badge" :class="req.status">{{ req.status === 'approved' ? '✅' : req.status === 'rejected' ? '❌' : '🔔' }}</view>
-          <view class="request-info">
-            <text class="request-name">{{ req.babyName || '宝宝' }} 申请抽奖</text>
-            <text class="request-time">{{ formatTime(req.createdAt) }}</text>
+      <view v-for="req in filteredRequests" :key="req.id" class="record-card">
+        <!-- 卡片头部 -->
+        <view class="card-header">
+          <view class="avatar" :class="req.status">
+            <text class="avatar-text">{{ req.babyName ? req.babyName.charAt(0) : '宝' }}</text>
+          </view>
+          <view class="header-info">
+            <text class="baby-name">{{ req.babyName || '宝宝' }}</text>
+            <text class="apply-time">{{ formatTime(req.createdAt) }}</text>
+          </view>
+          <view class="status-tag" :class="req.status">
+            <text class="status-text">{{ statusText(req.status) }}</text>
           </view>
         </view>
-        
-        <view v-if="req.reason" class="request-reason">
-          <text class="reason-label">申请原因：</text>
-          <text class="reason-text">{{ req.reason }}</text>
+
+        <!-- 理由 -->
+        <view v-if="req.reason" class="reason-box">
+          <text class="reason-label">理由</text>
+          <text class="reason-content">{{ req.reason }}</text>
         </view>
-        
-        <view v-if="req.status === 'pending'" class="request-actions">
-          <button class="btn-action reject" @click="handleApprove(req, false)">拒绝</button>
-          <button class="btn-action approve" @click="handleApprove(req, true)">批准</button>
+
+        <!-- 待处理：显示操作按钮 -->
+        <view v-if="req.status === 'pending'" class="action-buttons">
+          <button class="btn btn-reject" @click="handleApprove(req, false)">拒绝</button>
+          <button class="btn btn-approve" @click="handleApprove(req, true)">批准</button>
         </view>
-        
-        <view v-else class="request-status">
-          <text class="status-badge" :class="req.status">{{ req.status === 'approved' ? '已批准' : req.status === 'rejected' ? '已拒绝' : '已完成' }}</text>
-          <text v-if="req.approvedByName" class="status-processor">审批人：{{ req.approvedByName }}</text>
+
+        <!-- 已处理：显示处理人和原因 -->
+        <view v-else class="processed-info">
+          <view class="processor-row">
+            <text class="processor-icon">👤</text>
+            <text class="processor-text">
+              {{ req.status === 'completed' ? '完成' : '审批' }}人：{{ req.approvedByName || '系统' }}
+            </text>
+            <text class="processed-time">{{ formatTime(req.approvedAt || req.processedAt) }}</text>
+          </view>
+
         </view>
       </view>
     </scroll-view>
@@ -66,31 +77,32 @@
     <view v-if="showApproval" class="modal-overlay" @click="showApproval = false">
       <view class="modal-content" @click.stop>
         <view class="modal-header">
-          <text class="modal-icon">📝</text>
-          <text class="modal-title">审批抽奖申请</text>
+          <text class="modal-icon">{{ pendingAction === 'approve' ? '✅' : '❌' }}</text>
+          <text class="modal-title">{{ pendingAction === 'approve' ? '批准申请' : '拒绝申请' }}</text>
         </view>
         
-        <view class="modal-info">
-          <text class="info-label">申请人</text>
-          <text class="info-value">{{ activeRequest?.babyName || '宝宝' }}</text>
+        <view class="modal-applicant">
+          <text class="applicant-name">{{ activeRequest?.babyName || '宝宝' }}</text>
+          <text class="applicant-time">申请于 {{ activeRequest?.createdAt ? formatTime(activeRequest.createdAt) : '-' }}</text>
         </view>
         
-        <view class="modal-info">
-          <text class="info-label">申请时间</text>
-          <text class="info-value">{{ activeRequest?.createdAt ? formatTime(activeRequest.createdAt) : '-' }}</text>
+        <view class="modal-reason-section">
+          <text class="modal-reason-label">理由（选填）</text>
+          <textarea 
+            class="modal-textarea" 
+            v-model="approvalReason"
+            placeholder="写下理由..."
+            maxlength="100"
+          />
         </view>
-        
-        <textarea 
-          class="modal-textarea" 
-          v-model="approvalReason"
-          placeholder="请填写审批原因（可选）"
-          maxlength="200"
-        />
         
         <view class="modal-actions">
-          <button class="btn-modal cancel" @click="showApproval = false">取消</button>
-          <button class="btn-modal reject" @click="submitApproval(false)">拒绝</button>
-          <button class="btn-modal approve" @click="submitApproval(true)">批准</button>
+          <button class="btn-modal btn-cancel" @click="showApproval = false">取消</button>
+          <button 
+            class="btn-modal" 
+            :class="pendingAction === 'approve' ? 'btn-confirm-approve' : 'btn-confirm-reject'"
+            @click="submitApproval"
+          >确认{{ pendingAction === 'approve' ? '批准' : '拒绝' }}</button>
         </view>
       </view>
     </view>
@@ -106,13 +118,14 @@ export default {
       allRequests: [],
       currentFilter: 'pending',
       filters: [
-        { value: 'pending', label: '待批准', count: 0 },
+        { value: 'pending', label: '待处理', count: 0 },
         { value: 'approved', label: '已批准', count: 0 },
         { value: 'rejected', label: '已拒绝', count: 0 },
         { value: 'completed', label: '已完成', count: 0 },
       ],
       showApproval: false,
       activeRequest: null,
+      pendingAction: 'approve',
       approvalReason: '',
       userInfo: null,
       pollInterval: null,
@@ -125,57 +138,44 @@ export default {
     },
     
     filteredRequests() {
-      if (this.currentFilter === 'all') {
-        return this.allRequests;
-      }
+      if (this.currentFilter === 'all') return this.allRequests;
       return this.allRequests.filter(r => r.status === this.currentFilter);
     },
   },
   
   onLoad() {
-    // 权限验证
-    if (!checkAuth('/pages/requests/requests', (role) => {
-      uni.showToast({
-        title: '仅管理员和家长可访问',
-        icon: 'none',
-      });
-    })) {
-      return;
-    }
-    
     this.userInfo = uni.getStorageSync('user_info');
     this.fetchRequests();
-    
-    // 轮询更新
-    this.pollInterval = setInterval(() => {
-      this.fetchRequests();
-    }, 5000);
+    this.pollInterval = setInterval(() => this.fetchRequests(), 5000);
   },
   
   onUnload() {
-    // 清除轮询定时器
-    if (this.pollInterval) {
-      clearInterval(this.pollInterval);
-    }
+    if (this.pollInterval) clearInterval(this.pollInterval);
   },
   
   methods: {
     goBack() {
       uni.navigateBack();
     },
+    
     handleFilter(value) {
       this.currentFilter = value;
     },
     
     async fetchRequests() {
       try {
-        const res = await requests.list({
-          familyId: this.userInfo?.familyId,
-        });
+        const userInfo = uni.getStorageSync('user_info');
+        const familyId = userInfo?.familyId;
         
-        this.allRequests = res.requests || [];
+        if (!familyId) {
+          // 游客或未设置家庭，不提示错误，只清空列表
+          this.allRequests = [];
+          return;
+        }
         
-        // 更新筛选计数
+        const res = await requests.list({ familyId });
+        this.allRequests = Array.isArray(res.requests) ? res.requests : [];
+        
         this.filters.forEach(filter => {
           filter.count = this.allRequests.filter(r => r.status === filter.value).length;
         });
@@ -186,29 +186,27 @@ export default {
     
     handleApprove(req, approve) {
       this.activeRequest = req;
-      this.showApproval = true;
+      this.pendingAction = approve ? 'approve' : 'reject';
       this.approvalReason = '';
+      this.showApproval = true;
     },
     
-    async submitApproval(approve) {
-      if (!this.approvalReason.trim()) {
-        uni.showToast({
-          title: '请填写原因',
-          icon: 'none',
-        });
+    async submitApproval() {
+      if (!this.userInfo) {
+        uni.showToast({ title: '请先登录', icon: 'none' });
         return;
       }
-      
       try {
+        const status = this.pendingAction === 'approve' ? 'approved' : 'rejected';
         await requests.approve(this.activeRequest.id, {
-          status: approve ? 'approved' : 'rejected',
+          status,
           approvedBy: this.userInfo.id,
           approvedByName: this.userInfo.username,
-          reason: this.approvalReason.trim(),
+          reason: this.approvalReason?.trim() || undefined,
         });
         
         uni.showToast({
-          title: approve ? '✅ 已批准' : '已拒绝',
+          title: this.pendingAction === 'approve' ? '✅ 已批准' : '❌ 已拒绝',
           icon: 'success',
         });
         
@@ -216,24 +214,17 @@ export default {
         this.approvalReason = '';
         this.fetchRequests();
       } catch (err) {
-        uni.showToast({
-          title: err.message || '操作失败',
-          icon: 'none',
-        });
+        uni.showToast({ title: err.message || '操作失败', icon: 'none' });
       }
     },
     
     statusText(status) {
-      const map = {
-        pending: '待批准',
-        approved: '已批准',
-        rejected: '已拒绝',
-        completed: '已完成',
-      };
+      const map = { pending: '待处理', approved: '已批准', rejected: '已拒绝', completed: '已完成' };
       return map[status] || status;
     },
     
     formatTime(timeStr) {
+      if (!timeStr) return '-';
       const date = new Date(timeStr);
       const now = new Date();
       const diff = now - date;
@@ -241,7 +232,6 @@ export default {
       if (diff < 60000) return '刚刚';
       if (diff < 3600000) return `${Math.floor(diff / 60000)}分钟前`;
       if (diff < 86400000) return `${Math.floor(diff / 3600000)}小时前`;
-      
       return `${date.getMonth() + 1}月${date.getDate()}日 ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
     },
   },
@@ -269,7 +259,6 @@ page {
   box-sizing: border-box;
 }
 
-/* 头部 */
 .header {
   position: relative;
   text-align: center;
@@ -316,176 +305,278 @@ page {
   display: block;
 }
 
-/* 筛选区域 */
 .filter-section {
-  padding: 0 32rpx;
+  padding: 0;
   flex-shrink: 0;
 }
 
 .filter-list {
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10rpx);
   border-radius: 20rpx;
-  padding: 16rpx;
+  padding: 12rpx;
   display: flex;
-  gap: 12rpx;
-  overflow-x: auto;
+  gap: 8rpx;
 }
 
 .filter-item {
-  flex-shrink: 0;
-  background: rgba(255, 255, 255, 0.6);
+  flex: 1;
+  background: rgba(255, 255, 255, 0.5);
   border-radius: 16rpx;
-  padding: 12rpx 20rpx;
+  padding: 14rpx 8rpx;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 8rpx;
-  transition: all 0.3s;
+  gap: 4rpx;
+  transition: all 0.25s;
 }
 
 .filter-item.active {
-  background: linear-gradient(135deg, #f0abfc 0%, #818cf8 100%);
-  box-shadow: 0 4rpx 12rpx rgba(240, 171, 252, 0.3);
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
 }
 
 .filter-label {
   font-size: 24rpx;
-  color: #4b5563;
+  color: #6b7280;
   font-weight: 500;
 }
 
 .filter-item.active .filter-label {
-  color: #ffffff;
+  color: #1f2937;
+  font-weight: 600;
 }
 
 .filter-count {
-  background: rgba(0, 0, 0, 0.08);
-  padding: 4rpx 10rpx;
+  background: #f3f4f6;
+  padding: 2rpx 12rpx;
   border-radius: 10rpx;
-  font-size: 20rpx;
-  color: #6b7280;
+  font-size: 22rpx;
+  color: #9ca3af;
+  font-weight: 600;
+  min-width: 36rpx;
+  text-align: center;
 }
 
 .filter-item.active .filter-count {
-  background: rgba(255, 255, 255, 0.25);
+  background: linear-gradient(135deg, #f0abfc 0%, #818cf8 100%);
   color: #ffffff;
 }
 
-/* 列表 */
 .list {
-  height: calc(100vh - 380rpx);
-  padding: 16rpx 32rpx;
+  flex: 1;
+  padding: 20rpx 0;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  width: 100%;
-  box-sizing: border-box;
 }
 
-/* 空状态 */
 .empty-state {
   text-align: center;
-  padding: 100rpx 40rpx;
+  padding: 120rpx 40rpx;
 }
 
 .empty-emoji {
   display: block;
-  font-size: 100rpx;
+  font-size: 96rpx;
   margin-bottom: 24rpx;
-  opacity: 0.6;
+  opacity: 0.5;
 }
 
 .empty-text {
   font-size: 28rpx;
-  color: rgba(255, 255, 255, 0.8);
+  color: rgba(255, 255, 255, 0.85);
+  font-weight: 500;
 }
 
-/* 请求卡片 */
-.request-card {
-  background: rgba(255, 255, 255, 0.9);
+.record-card {
+  background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10rpx);
-  border-radius: 20rpx;
+  border-radius: 24rpx;
   padding: 24rpx;
-  margin-bottom: 20rpx;
-  display: flex;
-  flex-direction: column;
-  gap: 16rpx;
-  width: 100%;
-  box-sizing: border-box;
+  margin-bottom: 16rpx;
 }
 
-.request-left {
+.card-header {
   display: flex;
   align-items: center;
   gap: 16rpx;
+  margin-bottom: 16rpx;
 }
 
-.request-icon {
-  width: 80rpx;
-  height: 80rpx;
-  background: linear-gradient(135deg, #f3e8ff 0%, #fce7f3 100%);
-  border-radius: 12rpx;
+.avatar {
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 40rpx;
   flex-shrink: 0;
 }
 
-.request-info {
+.avatar.pending {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+}
+
+.avatar.approved {
+  background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+}
+
+.avatar.rejected {
+  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+}
+
+.avatar.completed {
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+}
+
+.avatar-text {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #374151;
+}
+
+.header-info {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 8rpx;
+  gap: 4rpx;
 }
 
-.request-name {
-  font-size: 28rpx;
+.baby-name {
+  font-size: 30rpx;
   font-weight: 600;
   color: #1f2937;
 }
 
-.request-time {
+.apply-time {
   font-size: 22rpx;
   color: #9ca3af;
 }
 
-.request-actions {
+.status-tag {
+  padding: 6rpx 16rpx;
+  border-radius: 20rpx;
+  font-size: 22rpx;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.status-tag.pending {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.status-tag.approved {
+  background: #d1fae5;
+  color: #059669;
+}
+
+.status-tag.rejected {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.status-tag.completed {
+  background: #dbeafe;
+  color: #2563eb;
+}
+
+.reason-box {
+  background: #f9fafb;
+  border-radius: 12rpx;
+  padding: 16rpx;
+  margin-bottom: 16rpx;
+}
+
+.reason-label {
+  display: block;
+  font-size: 20rpx;
+  color: #9ca3af;
+  margin-bottom: 6rpx;
+}
+
+.reason-content {
+  font-size: 26rpx;
+  color: #374151;
+  line-height: 1.5;
+}
+
+.action-buttons {
   display: flex;
-  gap: 12rpx;
+  gap: 16rpx;
   margin-top: 8rpx;
 }
 
-.btn-approve, .btn-reject {
+.btn {
   flex: 1;
-  height: 72rpx;
-  border-radius: 36rpx;
-  font-size: 26rpx;
+  height: 76rpx;
+  border-radius: 38rpx;
+  font-size: 28rpx;
   font-weight: 600;
   display: flex;
   align-items: center;
   justify-content: center;
+  border: none;
+  margin: 0;
+}
+
+.btn-reject {
+  background: #f3f4f6;
+  color: #6b7280;
 }
 
 .btn-approve {
   background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
   color: #ffffff;
+  box-shadow: 0 4rpx 12rpx rgba(34, 197, 94, 0.25);
 }
 
-.btn-reject {
-  background: rgba(255, 255, 255, 0.8);
-  color: #ef4444;
-  border: 2rpx solid #ef4444;
-}
-
-.request-status {
-  background: rgba(255, 255, 255, 0.6);
-  padding: 16rpx;
+.processed-info {
+  background: #f9fafb;
   border-radius: 12rpx;
+  padding: 16rpx;
+  margin-top: 8rpx;
 }
 
-.status-text {
+.processor-row {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  margin-bottom: 8rpx;
+}
+
+.processor-icon {
   font-size: 24rpx;
-  color: #6b7280;
+}
+
+.processor-text {
+  flex: 1;
+  font-size: 24rpx;
+  color: #374151;
+}
+
+.processed-time {
+  font-size: 22rpx;
+  color: #9ca3af;
+}
+
+.result-reason {
+  display: flex;
+  gap: 8rpx;
+  padding-top: 8rpx;
+  border-top: 1rpx solid #e5e7eb;
+}
+
+.result-label {
+  font-size: 22rpx;
+  color: #9ca3af;
+  flex-shrink: 0;
+}
+
+.result-content {
+  font-size: 24rpx;
+  color: #374151;
+  line-height: 1.4;
 }
 
 /* 弹窗 */
@@ -505,169 +596,12 @@ page {
 
 .modal-content {
   background: #ffffff;
-  border-radius: 24rpx;
+  border-radius: 28rpx;
   padding: 32rpx;
   width: 100%;
   max-width: 600rpx;
 }
 
-.modal-title {
-  display: block;
-  font-size: 36rpx;
-  font-weight: bold;
-  color: #1f2937;
-  text-align: center;
-  margin-bottom: 8rpx;
-}
-
-.modal-subtitle {
-  display: block;
-  font-size: 28rpx;
-  color: #6b7280;
-  text-align: center;
-  margin-bottom: 24rpx;
-}
-
-.modal-textarea {
-  width: 100%;
-  height: 200rpx;
-  border: 2rpx solid #e5e7eb;
-  border-radius: 12rpx;
-  padding: 16rpx;
-  font-size: 26rpx;
-  margin-bottom: 24rpx;
-}
-
-.modal-actions {
-  display: flex;
-  gap: 12rpx;
-}
-
-.btn-cancel, .btn-approve-modal, .btn-reject-modal {
-  flex: 1;
-  height: 80rpx;
-  border-radius: 40rpx;
-  font-size: 28rpx;
-  font-weight: 600;
-}
-
-.btn-cancel {
-  background: #f3f4f6;
-  color: #4b5563;
-}
-
-.btn-approve-modal {
-  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
-  color: #ffffff;
-}
-
-.btn-reject-modal {
-  background: #ef4444;
-  color: #ffffff;
-}
-</style>
-
-/* 优化的卡片样式 */
-.request-header {
-  display: flex;
-  align-items: center;
-  gap: 16rpx;
-  margin-bottom: 16rpx;
-}
-
-.request-badge {
-  width: 72rpx;
-  height: 72rpx;
-  background: linear-gradient(135deg, #f3e8ff 0%, #fce7f3 100%);
-  border-radius: 16rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 36rpx;
-  flex-shrink: 0;
-}
-
-.request-reason {
-  background: rgba(243, 244, 246, 0.8);
-  padding: 16rpx 20rpx;
-  border-radius: 12rpx;
-  margin-bottom: 16rpx;
-}
-
-.reason-label {
-  font-size: 22rpx;
-  color: #6b7280;
-  display: block;
-  margin-bottom: 8rpx;
-}
-
-.reason-text {
-  font-size: 26rpx;
-  color: #374151;
-  line-height: 1.5;
-}
-
-.request-actions {
-  display: flex;
-  gap: 16rpx;
-  margin-top: 8rpx;
-}
-
-.btn-action {
-  flex: 1;
-  height: 72rpx;
-  border-radius: 36rpx;
-  font-size: 28rpx;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-  margin: 0;
-}
-
-.btn-action.approve {
-  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
-  color: #ffffff;
-  box-shadow: 0 4rpx 12rpx rgba(34, 197, 94, 0.3);
-}
-
-.btn-action.reject {
-  background: #f3f4f6;
-  color: #6b7280;
-}
-
-.status-badge {
-  display: inline-block;
-  padding: 8rpx 20rpx;
-  border-radius: 20rpx;
-  font-size: 24rpx;
-  font-weight: 600;
-}
-
-.status-badge.approved {
-  background: rgba(34, 197, 94, 0.1);
-  color: #22c55e;
-}
-
-.status-badge.rejected {
-  background: rgba(239, 68, 68, 0.1);
-  color: #ef4444;
-}
-
-.status-badge.completed {
-  background: rgba(59, 130, 246, 0.1);
-  color: #3b82f6;
-}
-
-.status-processor {
-  display: block;
-  font-size: 22rpx;
-  color: #9ca3af;
-  margin-top: 8rpx;
-}
-
-/* 优化的弹窗样式 */
 .modal-header {
   display: flex;
   align-items: center;
@@ -680,23 +614,42 @@ page {
   font-size: 48rpx;
 }
 
-.modal-info {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16rpx 0;
-  border-bottom: 1rpx solid #f3f4f6;
-}
-
-.info-label {
-  font-size: 26rpx;
-  color: #6b7280;
-}
-
-.info-value {
-  font-size: 26rpx;
+.modal-title {
+  font-size: 36rpx;
+  font-weight: bold;
   color: #1f2937;
-  font-weight: 500;
+}
+
+.modal-applicant {
+  background: #f9fafb;
+  border-radius: 16rpx;
+  padding: 20rpx;
+  margin-bottom: 24rpx;
+  text-align: center;
+}
+
+.applicant-name {
+  display: block;
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 4rpx;
+}
+
+.applicant-time {
+  font-size: 22rpx;
+  color: #9ca3af;
+}
+
+.modal-reason-section {
+  margin-bottom: 24rpx;
+}
+
+.modal-reason-label {
+  display: block;
+  font-size: 24rpx;
+  color: #6b7280;
+  margin-bottom: 12rpx;
 }
 
 .modal-textarea {
@@ -704,42 +657,42 @@ page {
   min-height: 160rpx;
   background: #f9fafb;
   border: 2rpx solid #e5e7eb;
-  border-radius: 12rpx;
+  border-radius: 16rpx;
   padding: 16rpx;
-  font-size: 26rpx;
+  font-size: 28rpx;
   color: #1f2937;
-  margin: 20rpx 0;
   box-sizing: border-box;
 }
 
 .modal-actions {
   display: flex;
   gap: 12rpx;
-  margin-top: 24rpx;
 }
 
 .btn-modal {
   flex: 1;
-  height: 80rpx;
-  border-radius: 40rpx;
-  font-size: 28rpx;
+  height: 88rpx;
+  border-radius: 44rpx;
+  font-size: 30rpx;
   font-weight: 600;
   border: none;
   margin: 0;
 }
 
-.btn-modal.cancel {
+.btn-cancel {
   background: #f3f4f6;
   color: #6b7280;
 }
 
-.btn-modal.reject {
-  background: #fee2e2;
-  color: #dc2626;
-}
-
-.btn-modal.approve {
+.btn-confirm-approve {
   background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
   color: #ffffff;
-  box-shadow: 0 4rpx 12rpx rgba(34, 197, 94, 0.3);
+  box-shadow: 0 4rpx 12rpx rgba(34, 197, 94, 0.25);
 }
+
+.btn-confirm-reject {
+  background: #ef4444;
+  color: #ffffff;
+  box-shadow: 0 4rpx 12rpx rgba(239, 68, 68, 0.25);
+}
+</style>

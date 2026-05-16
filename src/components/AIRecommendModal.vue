@@ -14,11 +14,11 @@
           <textarea 
             class="description-input" 
             v-model="userDescription" 
-            placeholder="例如：学习用品类的奖品，适合 8 岁男孩"
+            :placeholder="existingRewards && existingRewards.length > 0 ? '例如：学习用品类的奖品（不填则基于已添加的奖品推荐）' : '例如：学习用品类的奖品，适合 8 岁男孩'"
             maxlength="200"
             auto-height
           />
-          <text class="input-tips">💡 描述越详细，推荐越精准（可选：年龄、性别、积分范围等）</text>
+          <text class="input-tips">💡 描述越详细，推荐越精准；不填则根据已添加的奖品推荐</text>
         </view>
         
         <!-- 快捷选项 -->
@@ -179,10 +179,13 @@ export default {
     
     async generateSuggestions() {
       console.log('[AIRecommendModal] generateSuggestions called');
+      console.log('[AIRecommendModal] userDescription:', this.userDescription);
+      console.log('[AIRecommendModal] existingRewards:', this.existingRewards);
       
-      if (!this.userDescription.trim()) {
+      // 如果没有输入描述且没有已添加的奖品，提示用户
+      if (!this.userDescription.trim() && (!this.existingRewards || this.existingRewards.length === 0)) {
         uni.showToast({
-          title: '请输入奖品描述',
+          title: '请输入奖品描述或添加一些奖品',
           icon: 'none',
         });
         return;
@@ -194,12 +197,22 @@ export default {
         // 调用后端 /api/recommend 接口
         const API_BASE_URL = 'https://baby-reward.clovey.site/api';
         
+        // 构造请求数据：有描述时结合描述和已添加奖品，无描述时只用已添加奖品
+        const requestData = {
+          input: this.userDescription.trim() || (this.existingRewards && this.existingRewards.length > 0 
+            ? `基于已有的奖品【${this.existingRewards.join('、')}】推荐类似的奖品` 
+            : ''),
+          existingRewards: this.existingRewards || [],
+        };
+        
+        console.log('[AIRecommendModal] Request data:', requestData);
+        
         const res = await new Promise((resolve, reject) => {
           uni.request({
             url: `${API_BASE_URL}/recommend`,
             method: 'POST',
             header: { 'Content-Type': 'application/json' },
-            data: { input: this.userDescription.trim() },
+            data: requestData,
             success: (response) => {
               console.log('[AIRecommendModal] Request success:', response);
               resolve(response);
@@ -220,10 +233,19 @@ export default {
             description: p.description || '',
             category: p.category || '其他',
             points: p.points || 10,
-            reason: '根据您的需求推荐',
-            trending: false,
+            reason: p.reason || '根据您的需求推荐',
+            trending: p.trending || false,
           }));
-          this.aiMessage = '根据您的描述推荐了以下奖品';
+          
+          // 根据是否有描述设置消息
+          if (this.userDescription.trim()) {
+            this.aiMessage = this.existingRewards && this.existingRewards.length > 0
+              ? '根据您的描述和已添加的奖品，为您推荐了以下奖品'
+              : '根据您的描述推荐了以下奖品';
+          } else {
+            this.aiMessage = '根据您已添加的奖品，为您推荐了以下相似的奖品';
+          }
+          
           this.step = 2;
           this.selectedIndices = [];
           
@@ -238,9 +260,13 @@ export default {
         console.error('[AIRecommendModal] Error:', err);
         // 降级使用模拟数据
         console.log('[AIRecommendModal] Falling back to mock data');
-        const mockSuggestions = this.getMockSuggestions(this.userDescription.trim());
+        const mockSuggestions = this.getMockSuggestions(
+          this.userDescription.trim() || (this.existingRewards && this.existingRewards.length > 0 
+            ? this.existingRewards.join(', ') 
+            : '')
+        );
         this.suggestions = mockSuggestions;
-        this.aiMessage = '根据您的描述，我为您推荐了以下奖品（离线模式）。';
+        this.aiMessage = '根据您的需求，我为您推荐了以下奖品（离线模式）。';
         this.step = 2;
         this.selectedIndices = [];
         
@@ -282,9 +308,30 @@ export default {
       try {
         const selectedPrizes = this.selectedIndices.map(idx => this.suggestions[idx]);
         const userInfo = uni.getStorageSync('user_info');
+        const isGuest = !userInfo || !userInfo.id;
         
         console.log('[AIRecommendModal] Adding prizes:', selectedPrizes.length);
-        console.log('[AIRecommendModal] userInfo:', userInfo);
+        console.log('[AIRecommendModal] userInfo:', userInfo, 'isGuest:', isGuest);
+        
+        if (isGuest) {
+          // 游客模式：保存到本地缓存
+          const localPrizes = uni.getStorageSync('local_prizes') || [];
+          selectedPrizes.forEach(prize => {
+            localPrizes.push({
+              id: 'local_' + Date.now() + Math.random(),
+              name: prize.name,
+              description: prize.description,
+              points: prize.points,
+              imageUrl: this.getEmojiForCategory(prize.category),
+            });
+          });
+          uni.setStorageSync('local_prizes', localPrizes);
+          uni.showToast({ title: '添加成功', icon: 'success' });
+          this.$emit('added', localPrizes);
+          this.handleClose();
+          this.loading = false;
+          return;
+        }
         
         const API_BASE_URL = 'https://baby-reward.clovey.site/api';
         

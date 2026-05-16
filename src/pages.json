@@ -33,14 +33,6 @@
       }
     },
     {
-      "path": "pages/invite/invite",
-      "style": {
-        "navigationBarTitleText": "邀请家人",
-        "navigationStyle": "custom",
-        "disableScroll": true
-      }
-    },
-    {
       "path": "pages/prizes/prizes",
       "style": {
         "navigationBarTitleText": "奖品管理",
@@ -49,9 +41,33 @@
       }
     },
     {
+      "path": "pages/my/my",
+      "style": {
+        "navigationBarTitleText": "我的",
+        "navigationStyle": "custom",
+        "disableScroll": true
+      }
+    },
+    {
+      "path": "pages/about/about",
+      "style": {
+        "navigationBarTitleText": "关于",
+        "navigationStyle": "custom",
+        "disableScroll": true
+      }
+    },
+    {
       "path": "pages/members/members",
       "style": {
         "navigationBarTitleText": "家庭成员",
+        "navigationStyle": "custom",
+        "disableScroll": true
+      }
+    },
+    {
+      "path": "pages/invite/invite",
+      "style": {
+        "navigationBarTitleText": "邀请家人",
         "navigationStyle": "custom",
         "disableScroll": true
       }

@@ -140,14 +140,14 @@ export const users = {
   create: (data) => post('/users', data),
   
   // 更新用户
-  update: (id, data) => put(`/users/${id}`, data),
+  update: (id, data) => put('/users', data, { id }),
   
   // 删除用户
   delete: (id) => {
     return new Promise((resolve, reject) => {
       const userInfo = uni.getStorageSync('user_info');
       uni.request({
-        url: API_BASE_URL + `/users/${id}`,
+        url: API_BASE_URL + '/users?id=' + id,
         method: 'DELETE',
         header: {
           'Content-Type': 'application/json',

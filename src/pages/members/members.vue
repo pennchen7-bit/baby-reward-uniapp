@@ -3,14 +3,26 @@
     <!-- 头部 -->
     <view class="header">
       <view class="back-btn" @click="goBack"><text class="back-icon">‹</text></view>
-      <text class="title">👨‍👩‍👧‍👦 家庭成员</text>
+      <text class="title">👨‍👩‍👧‍👦 我的家庭</text>
       <text class="subtitle">{{ members.length }} 人</text>
     </view>
 
-    <!-- 家庭码卡片 -->
-    <view class="family-card">
-      <text class="family-label">🏠 家庭码</text>
-      <text class="family-code">{{ familyCode || '加载中...' }}</text>
+    <!-- 家庭信息卡片 -->
+    <view v-if="userInfo" class="family-info-card">
+      <view class="family-info-row">
+        <text class="family-info-label">🏠 家庭</text>
+        <text class="family-info-value">{{ userInfo.familyName || '未设置' }}</text>
+        <text v-if="userInfo.role === 'admin'" class="family-edit-btn" @click="editFamilyName">✏️</text>
+      </view>
+      <view class="family-code-row">
+        <text class="family-code-label">家庭码</text>
+        <text class="family-code-value">{{ userInfo.familyCode }}</text>
+        <button class="btn-copy" @click="copyFamilyCode">复制</button>
+      </view>
+      <button v-if="isAdminOrParent" class="btn-invite" @click="goToInvite">
+        <text class="invite-icon">📧</text>
+        <text class="invite-text">邀请成员</text>
+      </button>
     </view>
 
     <!-- 成员列表 -->
@@ -65,6 +77,12 @@ export default {
     };
   },
   
+  computed: {
+    isAdminOrParent() {
+      return this.userInfo?.role === 'admin' || this.userInfo?.role === 'parent';
+    },
+  },
+  
   onLoad() {
     // 权限验证
     if (!checkAuth('/pages/members/members', (role) => {
@@ -110,6 +128,15 @@ export default {
           if (res.confirm) {
             try {
               await users.update(member.id, { role: newRole });
+              
+              // 如果修改的是当前用户，更新本地缓存的角色
+              if (member.id === this.userInfo.id) {
+                const userInfo = uni.getStorageSync('user_info');
+                userInfo.role = newRole;
+                uni.setStorageSync('user_info', userInfo);
+                this.userInfo = userInfo;
+              }
+              
               uni.showToast({ title: '修改成功', icon: 'success' });
               this.fetchMembers();
             } catch (err) {
@@ -129,6 +156,15 @@ export default {
           if (res.confirm) {
             try {
               await users.delete(member.id);
+              
+              // 如果删除的是当前用户，跳转到登录页
+              if (member.id === this.userInfo.id) {
+                uni.removeStorageSync('user_info');
+                uni.removeStorageSync('family_id');
+                uni.reLaunch({ url: '/pages/login/login' });
+                return;
+              }
+              
               uni.showToast({ title: '移除成功', icon: 'success' });
               this.fetchMembers();
             } catch (err) {
@@ -198,7 +234,92 @@ export default {
           icon: 'success'
         });
         
+        // 如果修改的是当前用户，同步更新本地存储和全局状态
+        if (member.id === this.userInfo.id) {
+          const userInfo = uni.getStorageSync('user_info');
+          userInfo.username = newName;
+          uni.setStorageSync('user_info', userInfo);
+          this.userInfo = userInfo;
+          // 触发全局事件让首页刷新
+          uni.$emit('userInfoUpdated', userInfo);
+        }
+        
         this.fetchMembers();
+      } catch (err) {
+        uni.showToast({
+          title: err.message || '更新失败',
+          icon: 'none'
+        });
+      }
+    },
+    
+    copyFamilyCode() {
+      uni.setClipboardData({
+        data: this.userInfo?.familyCode,
+        success: () => {
+          uni.showToast({ title: '已复制', icon: 'success' });
+        }
+      });
+    },
+    
+    goToInvite() {
+      uni.navigateTo({ url: '/pages/invite/invite' });
+    },
+    
+    editFamilyName() {
+      if (this.userInfo?.role !== 'admin') return;
+      
+      uni.showModal({
+        title: '编辑家庭名称',
+        editable: true,
+        placeholderText: '请输入家庭名称',
+        defaultText: this.userInfo?.familyName || '',
+        success: (res) => {
+          if (res.confirm && res.content) {
+            this.updateFamilyName(res.content);
+          }
+        }
+      });
+    },
+    
+    async updateFamilyName(name) {
+      try {
+        const API_BASE_URL = 'https://baby-reward.clovey.site/api';
+        const userInfo = uni.getStorageSync('user_info');
+        
+        await new Promise((resolve, reject) => {
+          uni.request({
+            url: `${API_BASE_URL}/families/name`,
+            method: 'PUT',
+            data: { name },
+            header: {
+              'Content-Type': 'application/json',
+              'X-User-Id': userInfo.id,
+              'X-User-Role': userInfo.role,
+              'X-Family-Id': userInfo.familyId,
+            },
+            success: (res) => {
+              if (res.statusCode === 200) {
+                resolve(res.data);
+              } else {
+                reject(new Error(res.data?.error || '更新失败'));
+              }
+            },
+            fail: (err) => {
+              reject(new Error('网络错误'));
+            }
+          });
+        });
+        
+        // 更新本地存储
+        userInfo.familyName = name;
+        uni.setStorageSync('user_info', userInfo);
+        this.userInfo = userInfo;
+        
+        uni.showToast({
+          title: '更新成功',
+          icon: 'success'
+        });
       } catch (err) {
         uni.showToast({
           title: err.message || '更新失败',
@@ -275,6 +396,61 @@ page {
   display: block;
   font-size: 24rpx;
   color: rgba(255, 255, 255, 0.9);
+}
+
+.family-info-card {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 24rpx;
+  padding: 24rpx;
+  margin-bottom: 24rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.08);
+  flex-shrink: 0;
+}
+
+.family-info-row {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  margin-bottom: 16rpx;
+}
+
+.family-info-label {
+  font-size: 26rpx;
+  color: #6b7280;
+}
+
+.family-info-value {
+  font-size: 30rpx;
+  font-weight: bold;
+  color: #1f2937;
+  flex: 1;
+}
+
+.family-edit-btn {
+  font-size: 28rpx;
+}
+
+.family-code-row {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  background: rgba(147, 51, 234, 0.08);
+  padding: 16rpx 20rpx;
+  border-radius: 16rpx;
+  margin-bottom: 20rpx;
+}
+
+.family-code-label {
+  font-size: 24rpx;
+  color: #6b7280;
+}
+
+.family-code-value {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #9333ea;
+  flex: 1;
+  letter-spacing: 4rpx;
 }
 
 .family-card {

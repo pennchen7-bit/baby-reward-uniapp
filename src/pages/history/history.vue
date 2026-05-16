@@ -96,13 +96,15 @@ export default {
     },
     
     formatTime(timeStr) {
+      if (!timeStr) return '-';
       const date = new Date(timeStr);
-      return date.toLocaleString('zh-CN', {
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
+      const now = new Date();
+      const diff = now - date;
+      
+      if (diff < 60000) return '刚刚';
+      if (diff < 3600000) return `${Math.floor(diff / 60000)}分钟前`;
+      if (diff < 86400000) return `${Math.floor(diff / 3600000)}小时前`;
+      return `${date.getMonth() + 1}月${date.getDate()}日 ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
     },
   },
 };
